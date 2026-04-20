@@ -1,0 +1,47 @@
+version: '3.8'
+
+# Development override configuration
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # Python debugger port
+    environment:
+      - LOG_LEVEL=DEBUG
+      - PYTHONUNBUFFERED=1
+      - DEBUG=1
+    volumes:
+      - ./app:/app/app  # Hot reload for code changes
+      - ./main.py:/app/main.py
+      - ./videos:/app/videos
+      - ./assets:/app/assets
+      - ./temp:/app/temp
+    command: >
+      uvicorn main:app 
+      --host 0.0.0.0 
+      --port 8000 
+      --reload
+    networks:
+      - vartapravah_network
+
+  streamer:
+    # Disabled in development to avoid streaming
+    deploy:
+      replicas: 0
+
+  watchdog:
+    # Reduced check frequency for development
+    command: >
+      sh -c "
+      while true; do
+        echo 'Watchdog alive at '$(date);
+        sleep 60;
+      done
+      "
+    networks:
+      - vartapravah_network
