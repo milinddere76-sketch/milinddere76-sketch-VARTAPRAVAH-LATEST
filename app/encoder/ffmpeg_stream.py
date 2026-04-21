@@ -18,16 +18,37 @@ YOUTUBE_STREAM_KEY = os.getenv('YOUTUBE_STREAM_KEY')
 
 logger = logging.getLogger(__name__)
 
-# Locate ffmpeg binary
-FFMPEG_BIN = shutil.which('ffmpeg')
+# Locate ffmpeg binary - prefer Debian installed binary
+FFMPEG_BIN = None
+
+# First, check if ffmpeg is available in PATH
+path_ffmpeg = shutil.which('ffmpeg')
+if path_ffmpeg:
+    # Verify it's actually executable and not corrupted
+    try:
+        result = subprocess.run([path_ffmpeg, '-version'], capture_output=True, timeout=5)
+        if result.returncode == 0:
+            FFMPEG_BIN = path_ffmpeg
+            logger.info(f"FFmpeg found at: {FFMPEG_BIN}")
+        else:
+            logger.warning(f"FFmpeg at {path_ffmpeg} returned error code {result.returncode}")
+    except Exception as e:
+        logger.warning(f"FFmpeg at {path_ffmpeg} failed verification: {e}")
+
+# Fallback to explicit Debian installation path
+if not FFMPEG_BIN and os.path.exists('/usr/bin/ffmpeg'):
+    try:
+        result = subprocess.run(['/usr/bin/ffmpeg', '-version'], capture_output=True, timeout=5)
+        if result.returncode == 0:
+            FFMPEG_BIN = '/usr/bin/ffmpeg'
+            logger.info(f"FFmpeg found at: {FFMPEG_BIN}")
+        else:
+            logger.error(f"FFmpeg at /usr/bin/ffmpeg returned error: {result.returncode}")
+    except Exception as e:
+        logger.error(f"FFmpeg at /usr/bin/ffmpeg failed verification: {e}")
+
 if not FFMPEG_BIN:
-    # Try common paths if not in PATH
-    for path in ['/usr/bin/ffmpeg', '/usr/local/bin/ffmpeg', '/bin/ffmpeg']:
-        if os.path.exists(path):
-            FFMPEG_BIN = path
-            break
-    if not FFMPEG_BIN:
-        logger.warning("FFmpeg binary not found in system PATH")
+    logger.error("FFmpeg binary not found or not working. Install FFmpeg or use the streamer service.")
 
 class FFmpegStreamer:
     def __init__(self):
@@ -53,7 +74,11 @@ class FFmpegStreamer:
             vf = f"{filters[0]}drawtext=fontfile='{self.font_path}':textfile='{os.path.join(TEMP_DIR, 'ticker.txt')}':fontsize=40:fontcolor=white:box=1:boxcolor=black@0.5:x=(w-text_w)/2:y=h-100:scroll=1"
 
             if not FFMPEG_BIN:
-                raise RuntimeError("FFmpeg binary not found. Please install FFmpeg.")
+                raise RuntimeError(
+                    "FFmpeg binary not found or not working. "
+                    "Ensure FFmpeg is installed in the container or use the dedicated streamer service. "
+                    "Error: exec format error typically means binary incompatibility - verify container arch matches binary."
+                )
             
             cmd = [
                 FFMPEG_BIN, '-y'
@@ -64,8 +89,13 @@ class FFmpegStreamer:
                 '-vf', vf,
                 '-f', 'mp4', output_path
             ]
-            subprocess.run(cmd, check=True, capture_output=False)
-            logger.info(f"Video created: {output_path}")
+            try:
+                subprocess.run(cmd, check=True, capture_output=False)
+                logger.info(f"Video created: {output_path}")
+            except subprocess.CalledProcessError as e:
+                logger.error(f"FFmpeg error: {e}")
+                logger.error(f"FFmpeg binary: {FFMPEG_BIN}")
+                raise
         except subprocess.CalledProcessError as e:
             logger.error(f"FFmpeg error: {e}")
             raise
@@ -75,7 +105,11 @@ class FFmpegStreamer:
         rtmp_url = f"rtmp://a.rtmp.youtube.com/live2/{YOUTUBE_STREAM_KEY}"
         
         if not FFMPEG_BIN:
-            raise RuntimeError("FFmpeg binary not found. Please install FFmpeg.")
+            raise RuntimeError(
+                "FFmpeg binary not found or not working. "
+                "Use the dedicated 'streamer' service in docker-compose for YouTube streaming. "
+                "Direct streaming from app requires FFmpeg to be properly installed and compatible."
+            )
         
         cmd = [
             FFMPEG_BIN, '-re', '-stream_loop', '-1', '-i', video_path,
@@ -89,6 +123,7 @@ class FFmpegStreamer:
             return self.stream_process
         except Exception as e:
             logger.error(f"Error starting stream: {e}")
+            logger.error(f"FFmpeg binary: {FFMPEG_BIN}")
             raise
 
     def loop_stream(self, video_list: list):
@@ -102,7 +137,11 @@ class FFmpegStreamer:
                 return
 
         if not FFMPEG_BIN:
-            raise RuntimeError("FFmpeg binary not found. Please install FFmpeg.")
+            raise RuntimeError(
+                "FFmpeg binary not found or not working. "
+                "Use the dedicated 'streamer' service in docker-compose for looped streaming. "
+                "Ensure container is built with compatible FFmpeg binary."
+            )
 
         # Create concat file
         concat_file = os.path.join(TEMP_DIR, 'playlist.txt')
@@ -120,6 +159,7 @@ class FFmpegStreamer:
             logger.info("Started looped streaming")
         except Exception as e:
             logger.error(f"Error starting loop stream: {e}")
+            logger.error(f"FFmpeg binary: {FFMPEG_BIN}")
             raise
 
     def stop_stream(self):
@@ -141,10 +181,20 @@ class FFmpegStreamer:
                 f.write(f"file '{path}'\n")
         
         if not FFMPEG_BIN:
-            raise RuntimeError("FFmpeg binary not found. Please install FFmpeg.")
+            raise RuntimeError(
+                "FFmpeg binary not found or not working. "
+                "Ensure FFmpeg is properly installed and compatible with container architecture. "
+                "Error 'exec format error' indicates binary architecture mismatch."
+            )
         
         cmd = [
             FFMPEG_BIN, '-f', 'concat', '-safe', '0', '-i', concat_file,
             '-c', 'copy', output_path
         ]
-        subprocess.run(cmd, check=True, capture_output=False)
+        try:
+            subprocess.run(cmd, check=True, capture_output=False)
+            logger.info(f"Videos concatenated: {output_path}")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Concatenation error: {e}")
+            logger.error(f"FFmpeg binary: {FFMPEG_BIN}")
+            raise

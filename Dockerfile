@@ -16,7 +16,11 @@ RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
     libsndfile1 \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && ffmpeg -version || (echo "FFmpeg installation failed" && exit 1)
+
+# Verify ffmpeg is at /usr/bin/ffmpeg
+RUN test -x /usr/bin/ffmpeg || (echo "FFmpeg not found at /usr/bin/ffmpeg" && exit 1)
 
 # =========================
 # WORKDIR
