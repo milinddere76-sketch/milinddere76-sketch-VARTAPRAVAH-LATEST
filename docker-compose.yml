@@ -42,7 +42,7 @@ services:
       retries: 3
 
   watchdog:
-    image: alpine:latest
+    image: docker:latest
     container_name: vartapravah_watchdog
     restart: always
     depends_on:
