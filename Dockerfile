@@ -1,12 +1,12 @@
-FROM python:3.11-slim
+FROM python:3.10-slim
 
-# Install dependencies
+# Install system deps
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     git \
     curl \
-    fonts-dejavu-core \
-    fonts-noto-core \
+    libsndfile1 \
+    espeak-ng \
     && rm -rf /var/lib/apt/lists/*
 
 # Set workdir
@@ -15,11 +15,22 @@ WORKDIR /app
 # Copy requirements
 COPY requirements.txt .
 
-# Install python deps
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python deps
+RUN pip install --upgrade pip
+RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+RUN pip install -r requirements.txt
+
+# Clone Wav2Lip repository
+RUN git clone https://github.com/Rudrabha/Wav2Lip.git
+
+# Create checkpoints directory
+RUN mkdir -p Wav2Lip/checkpoints
+
+# Download Wav2Lip model
+RUN cd Wav2Lip/checkpoints && \
+    curl -L "https://github.com/Rudrabha/Wav2Lip/releases/download/checkpoints/wav2lip.pth" -o wav2lip.pth
 
 # Copy project
 COPY . .
 
-# Run app with uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "app/main.py"]

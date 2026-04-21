@@ -1,181 +1,368 @@
-# VartaPravah - AI Broadcast News System 📡
+# VARTAPRAVAH - AI News Avatar Generator 🎬
 
-A complete production-ready AI broadcast system for 24×7 Marathi YouTube News Channel with realistic AI anchors, professional graphics, and automated news generation.
+Convert news text to professionally lip-synced video and stream live to YouTube in real-time.
 
-## ✨ Features
+## 🎯 Features
 
-### Core Capabilities
-- 🧑‍💼 **Dual AI Anchors** - Alternating male/female anchors with realistic faces
-- 🗣️ **Lip Sync Technology** - Wav2Lip integration for talking face videos
-- 📺 **Professional Graphics** - TV-grade overlays (logo, ticker, lower third, breaking news)
-- 🎙️ **Marathi TTS** - Natural speech synthesis in Marathi language
-- 📰 **Automated News** - Scheduled or on-demand video generation
-- 📡 **YouTube Live** - Continuous RTMP streaming with auto-recovery
-- ⏱️ **Live Clock** - Real-time clock overlay
-- 🎬 **Intro/Outro Support** - Smooth segment transitions
-- 🔄 **Auto-Recovery** - Watchdog ensures 24/7 uptime
-- 💾 **Fallback Content** - Automatic fallback if no new content
+- ✅ **Multi-language Text-to-Speech** - Convert text to natural speech (Hindi, Marathi, English, etc.)
+- ✅ **Automatic Lip-Syncing** - Wav2Lip deep learning model for perfect lip-sync
+- ✅ **YouTube Live Streaming** - Direct RTMP streaming to YouTube Live
+- ✅ **REST API** - FastAPI endpoints for all operations
+- ✅ **Docker Containerized** - One-command deployment
+- ✅ **Health Monitoring** - Automatic restart and health checks
+- ✅ **Error Handling** - Graceful error recovery with detailed logging
 
-### Technical Features
-- **Docker Orchestration** - Multi-container setup with docker-compose
-- **GPU Acceleration** - Optional CUDA support for lip-sync
-- **Modular Architecture** - Separate engines for each feature
-- **RESTful API** - Full REST API for control and integration
-- **Comprehensive Logging** - Complete visibility into operations
-- **State Management** - Persistent anchor state tracking
+## 📋 System Requirements
+
+- **Docker Desktop** (Windows/Mac) or **Docker + Docker Compose** (Linux)
+- **4GB+ RAM** minimum (8GB+ recommended for smooth processing)
+- **20GB+ disk space** (for models and output)
+- **YouTube Channel** with Live streaming enabled
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Docker Desktop
-- YouTube Stream Key
-- 4GB+ RAM (8GB+ recommended)
+### 1. Clone & Setup
 
-### 1. Setup (1 minute)
 ```bash
-cp .env.example .env
-# Edit .env and add YouTube Stream Key
+cd VARTAPRAVAH-LATEST
+copy .env.example .env
 ```
 
-### 2. Launch (30 seconds)
-```bash
-# Linux/Mac
-chmod +x start.sh && ./start.sh
+### 2. Configure YouTube RTMP Key
 
-# Windows
-start.bat
+Edit `.env` and add your YouTube Stream Key:
+
+```env
+YOUTUBE_RTMP_KEY=your-stream-key-here
+YOUTUBE_RTMP_URL=rtmp://a.rtmp.youtube.com/live2/
 ```
 
-### 3. Generate News
+**Get your Stream Key:**
+1. Go to [YouTube Studio Live](https://studio.youtube.com/channel/UC.../livestreaming/manage)
+2. Click "Stream Settings"
+3. Copy the Stream Key (e.g., `qcu7-xesd-m4sv-9zvv-e335`)
+
+### 3. Add Anchor Video
+
+Place your anchor video file:
+
+```
+VARTAPRAVAH-LATEST/
+└── assets/
+    └── anchor.mp4    (Your news anchor video - 1920x1080 recommended)
+    └── logo.png      (Optional - Channel logo/branding)
+```
+
+### 4. Build & Run
+
 ```bash
-curl -X POST http://localhost:8000/generate-news \
+# Build image and start container
+docker-compose up --build
+
+# View logs
+docker-compose logs -f vartapravah
+
+# Stop container
+docker-compose down
+```
+
+## 🔌 API Usage
+
+Once running, access the API at `http://localhost:8000`
+
+### API Endpoints
+
+#### Health Check
+```bash
+curl http://localhost:8000/health
+```
+
+#### 1️⃣ Text-to-Speech
+```bash
+curl -X POST http://localhost:8000/tts \
   -H "Content-Type: application/json" \
   -d '{
-    "headline": "महाराष्ट्रातील मुख्य बातमी",
-    "content": "बातमीचा तपशील येथे आहे।",
-    "category": "राजकारण",
-    "breaking": false
+    "text": "नमस्कार, यह एक समाचार है।",
+    "output_path": "output/audio.wav"
   }'
 ```
 
-## 📚 Documentation
-
-- **[Full Setup Guide](SETUP_GUIDE.md)** - Detailed configuration and deployment
-- **[API Docs](http://localhost:8000/docs)** - Interactive API documentation
-- **[Docker Compose](docker-compose.yml)** - Multi-service architecture
-
-## 🐳 Docker Services
-
-| Service | Purpose | Status |
-|---------|---------|--------|
-| **app** | FastAPI server, video generation | Port 8000 |
-| **streamer** | FFmpeg RTMP broadcaster | Continuous |
-| **watchdog** | Health monitoring & auto-restart | Active |
-
-## 📡 API Endpoints
-
-### Generate News Video
+#### 2️⃣ Lip-Sync Video
 ```bash
-POST /generate-news
+curl -X POST http://localhost:8000/lipsync \
+  -H "Content-Type: application/json" \
+  -d '{
+    "audio_path": "output/audio.wav",
+    "video_path": "assets/anchor.mp4",
+    "output_video": "output/video.mp4"
+  }'
 ```
-Request body:
+
+#### 3️⃣ Stream to YouTube
+```bash
+curl -X POST http://localhost:8000/stream \
+  -H "Content-Type: application/json" \
+  -d '{
+    "video_path": "output/video.mp4",
+    "rtmp_url": "rtmp://a.rtmp.youtube.com/live2/YOUR_STREAM_KEY"
+  }'
+```
+
+#### 🎯 Complete Pipeline (All-in-One)
+```bash
+curl -X POST http://localhost:8000/pipeline \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "नमस्कार, वार्ताप्रवाह मध्ये आपले स्वागत आहे।",
+    "rtmp_url": "rtmp://a.rtmp.youtube.com/live2/YOUR_STREAM_KEY"
+  }'
+```
+
+### Interactive API Docs
+
+Open `http://localhost:8000/docs` in your browser for Swagger UI - try endpoints interactively!
+
+## 📁 Project Structure
+
+```
+VARTAPRAVAH-LATEST/
+│
+├── docker-compose.yml       # Container orchestration
+├── Dockerfile              # Image definition
+├── requirements.txt        # Python dependencies
+├── .env.example           # Configuration template
+├── README.md              # This file
+│
+├── app/
+│   ├── main.py           # Entry point (FastAPI server)
+│   ├── api.py            # REST API endpoints
+│   ├── tts_engine.py     # Text-to-Speech (Coqui TTS)
+│   ├── lipsync.py        # Lip-sync (Wav2Lip)
+│   └── streamer.py       # YouTube RTMP streaming (FFmpeg)
+│
+├── assets/
+│   ├── anchor.mp4        # Anchor video (you provide)
+│   └── logo.png          # Channel logo (optional)
+│
+├── output/
+│   ├── audio.wav         # Generated audio files
+│   ├── video.mp4         # Lip-synced videos
+│   └── final.mp4         # Final output
+│
+└── logs/
+    └── vartapravah.log   # Application logs
+```
+
+## 🔧 Configuration
+
+### Environment Variables (.env)
+
+```env
+# YouTube
+YOUTUBE_RTMP_KEY=your-stream-key
+YOUTUBE_RTMP_URL=rtmp://a.rtmp.youtube.com/live2/
+
+# TTS
+TTS_MODEL=tts_models/multilingual/multi-dataset/xtts_v2
+TTS_GPU=false
+
+# Paths
+ANCHOR_VIDEO=assets/anchor.mp4
+OUTPUT_DIR=output
+
+# API
+API_HOST=0.0.0.0
+API_PORT=8000
+API_LOG_LEVEL=info
+```
+
+## 🐛 Troubleshooting
+
+### Issue: Container fails to start
+
+**Check logs:**
+```bash
+docker-compose logs vartapravah
+```
+
+**Common causes:**
+- Out of disk space → Clean up `output/` folder
+- Out of RAM → Increase Docker memory limits
+- Port 8000 already in use → Change port in docker-compose.yml
+
+### Issue: TTS model fails to load
+
+**Solution:**
+```bash
+# Delete cached models and retry
+docker-compose down
+docker system prune -a
+docker-compose up --build
+```
+
+### Issue: Wav2Lip not generating video
+
+**Ensure:**
+- Audio file exists and is valid WAV format
+- Anchor video is MP4 format at 1920x1080 resolution
+- FFmpeg is properly installed (included in Docker)
+
+**Debug:**
+```bash
+# Access container shell
+docker exec -it vartapravah_ai bash
+
+# Test Wav2Lip manually
+python Wav2Lip/inference.py \
+  --checkpoint_path Wav2Lip/checkpoints/wav2lip.pth \
+  --face assets/anchor.mp4 \
+  --audio output/audio.wav \
+  --outfile output/test.mp4
+```
+
+### Issue: YouTube streaming fails
+
+**Verify:**
+1. Stream Key is correct (check YouTube Studio)
+2. YouTube Live is enabled on your channel
+3. RTMP URL format: `rtmp://a.rtmp.youtube.com/live2/STREAM_KEY`
+
+**Check FFmpeg:**
+```bash
+docker exec -it vartapravah_ai ffmpeg -version
+```
+
+## 📊 Performance Tips
+
+1. **Use GPU acceleration** (if available):
+   - Update Dockerfile: Change `gpu=False` to `gpu=True`
+   - Install NVIDIA Docker: https://github.com/NVIDIA/nvidia-docker
+
+2. **Optimize Video Quality:**
+   - For faster processing: Lower resolution anchor video
+   - For better quality: Use 1080p anchor with high bitrate
+
+3. **Memory Management:**
+   - Clear output folder periodically: `rm -rf output/*.mp4`
+   - Monitor disk usage: `docker-compose stats`
+
+## 🔐 Security Best Practices
+
+1. **Never commit .env** - Add to .gitignore
+2. **Use environment secrets** - Don't hardcode stream keys
+3. **Restrict API access** - Use firewall rules or proxy
+4. **Update models regularly** - Keep TTS and Wav2Lip models current
+
+## 📝 Logging
+
+View application logs:
+
+```bash
+# Real-time logs
+docker-compose logs -f vartapravah
+
+# Last 100 lines
+docker-compose logs --tail=100
+
+# Specific time range
+docker-compose logs --since 2024-01-15 --until 2024-01-16
+```
+
+Log file inside container: `/app/logs/vartapravah.log`
+
+## 🤝 API Response Examples
+
+### Success Response
 ```json
 {
-  "headline": "मुख्य बातमी",
-  "content": "विस्तृत मजकूर",
-  "category": "राजकारण",
-  "breaking": false
+  "status": "success",
+  "audio_path": "output/audio.wav",
+  "video_path": "output/video.mp4",
+  "timestamp": "2024-01-15T10:30:45.123456",
+  "message": "✅ Complete pipeline executed successfully"
 }
 ```
 
-### Streaming Control
-```bash
-POST /start-stream  # Start YouTube streaming
-POST /stop-stream   # Stop streaming
-GET /status         # Get system status
+### Error Response
+```json
+{
+  "detail": "Audio file not found: output/audio.wav"
+}
 ```
 
-## ⚙️ Configuration
+## 📚 Technology Stack
 
-Edit `.env` to customize:
-```bash
-YOUTUBE_STREAM_KEY=your_key_here
-VIDEO_BITRATE=3000k
-AUDIO_BITRATE=128k
-NEWS_INTERVAL=5
-TTS_LANG=mr
-```
+| Component | Technology | Version |
+|-----------|-----------|---------|
+| API Framework | FastAPI | 0.104.1 |
+| Text-to-Speech | Coqui TTS | 0.22.0 |
+| Lip-Sync | Wav2Lip | Latest |
+| Video Processing | FFmpeg | 8.1+ |
+| ML Framework | PyTorch | Latest (CPU) |
+| Container | Docker | Latest |
+| Server | Uvicorn | 0.24.0 |
 
-See [SETUP_GUIDE.md](SETUP_GUIDE.md) for detailed configuration options.
+## 🎓 Learning Resources
 
-## 📊 Monitoring
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [Coqui TTS Documentation](https://github.com/coqui-ai/TTS)
+- [Wav2Lip Repository](https://github.com/Rudrabha/Wav2Lip)
+- [FFmpeg Documentation](https://ffmpeg.org/documentation.html)
 
-```bash
-# View logs
-docker-compose logs -f app
+## 📝 License
 
-# Check status
-docker-compose ps
+This project is provided as-is for educational and personal use.
 
-# Access API
-http://localhost:8000/docs
-
-# Run FFmpeg stream monitor (Linux/Mac)
-./stream-monitor.sh &
-
-# Run FFmpeg stream monitor (Windows)
-stream-monitor.bat
-```
-
-For detailed monitoring setup, see [STREAM_MONITORING_GUIDE.md](STREAM_MONITORING_GUIDE.md)
-
-## 🎨 Customization
-
-Replace assets in `app/assets/`:
-- `logo.png` - Channel logo
-- `studio.jpg` - Background image
-- `anchors/male.png` - Male anchor
-- `anchors/female.png` - Female anchor
-- `intro.mp4`, `outro.mp4` - Clips
-
-## 📈 System Requirements
-
-- CPU: 2+ cores (4+ recommended)
-- RAM: 2GB+ (8GB+ recommended)
-- Storage: 5GB+ (50GB+ for production)
-- Internet: 5+ Mbps upload
-- GPU: Optional (NVIDIA CUDA for faster lip-sync)
-
-## 🔧 Troubleshooting
-
-See [SETUP_GUIDE.md](SETUP_GUIDE.md#troubleshooting) for detailed troubleshooting.
-
-**Common issues:**
-- Services won't start → Check `.env` exists
-- Stream not visible → Verify YouTube Stream Key
-- Lip sync failing → Check GPU or logs
-- Videos not generating → Verify assets directory
-
-## 📝 Project Structure
+## ⚙️ System Architecture
 
 ```
-vartapravah/
-├── app/encoder/          # Core engines
-├── app/assets/           # Images, fonts, clips
-├── main.py               # FastAPI app
-├── docker-compose.yml    # Service orchestration
-├── Dockerfile            # Container definition
-├── requirements.txt      # Python packages
-├── SETUP_GUIDE.md       # Detailed guide
-└── README.md            # This file
+┌─────────────────────────────────────────────┐
+│         Client / External System            │
+│  (News Feed, Scheduling System, etc.)       │
+└──────────────┬──────────────────────────────┘
+               │
+               ▼
+       ┌───────────────────┐
+       │   FastAPI REST    │
+       │      Server       │
+       │  (Port 8000)      │
+       └───────────────────┘
+               │
+      ┌────────┼────────┐
+      ▼        ▼        ▼
+  ┌────────────────────────────────┐
+  │  TTS Engine (Coqui)            │
+  │  Text → Audio (WAV)            │
+  └────────────────────────────────┘
+               │
+               ▼
+  ┌────────────────────────────────┐
+  │  Lip-Sync Engine (Wav2Lip)     │
+  │  Audio + Video → Sync Video    │
+  └────────────────────────────────┘
+               │
+               ▼
+  ┌────────────────────────────────┐
+  │  Streamer (FFmpeg)             │
+  │  MP4 → RTMP → YouTube Live     │
+  └────────────────────────────────┘
+               │
+               ▼
+       ┌─────────────────┐
+       │  YouTube Live   │
+       │   Broadcast     │
+       └─────────────────┘
 ```
 
-## 🤝 Support
+## 🆘 Support
 
-1. Check [SETUP_GUIDE.md](SETUP_GUIDE.md)
-2. View logs: `docker-compose logs`
-3. Test API: http://localhost:8000/docs
+For issues or questions:
+1. Check logs: `docker-compose logs`
+2. Review troubleshooting section above
+3. Ensure Docker and dependencies are up-to-date
 
 ---
 
-**Production Ready** | **24/7 Broadcasting** | **Marathi Support** | **AI Powered**
+**Made with ❤️ for content creators & news organizations**
+
+Version: 1.0.0 | Last Updated: 2024-01-15
