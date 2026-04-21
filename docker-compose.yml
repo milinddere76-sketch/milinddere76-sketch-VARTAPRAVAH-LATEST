@@ -29,12 +29,12 @@ services:
     networks:
       - vartapravah_network
     environment:
-      - STREAM_KEY=${YOUTUBE_STREAM_KEY}
+      - YOUTUBE_STREAM_KEY=${YOUTUBE_STREAM_KEY}
     command: >
       -re -stream_loop -1 -i /videos/fallback.mp4
       -c:v libx264 -preset veryfast -b:v 3000k
-      -c:a aac -b:a 128k
-      -f flv rtmp://a.rtmp.youtube.com/live2/${YOUTUBE_STREAM_KEY}
+      -c:a aac -b:a 128k -f flv 
+      rtmp://a.rtmp.youtube.com/live2/${YOUTUBE_STREAM_KEY}
     healthcheck:
       test: ["CMD", "ps", "aux"]
       interval: 30s
@@ -52,8 +52,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command: >
-      sh -c "
-      while true; do
+      sh -c "while true; do
         if ! docker ps | grep -q vartapravah_stream; then
           echo 'Stream service down, restarting...';
           docker restart vartapravah_stream;
@@ -63,8 +62,7 @@ services:
           docker restart vartapravah_app;
         fi;
         sleep 30;
-      done
-      "
+      done"
 
 networks:
   vartapravah_network:

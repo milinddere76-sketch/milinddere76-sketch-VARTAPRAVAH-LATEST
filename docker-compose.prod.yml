@@ -52,12 +52,12 @@ services:
     networks:
       - vartapravah_network
     environment:
-      - STREAM_KEY=${YOUTUBE_STREAM_KEY}
+      - YOUTUBE_STREAM_KEY=${YOUTUBE_STREAM_KEY}
     command: >
       -re -stream_loop -1 -i /videos/fallback.mp4
       -c:v libx264 -preset veryfast -b:v 3000k
-      -c:a aac -b:a 128k
-      -f flv rtmp://a.rtmp.youtube.com/live2/${YOUTUBE_STREAM_KEY}
+      -c:a aac -b:a 128k -f flv 
+      rtmp://a.rtmp.youtube.com/live2/${YOUTUBE_STREAM_KEY}
     deploy:
       resources:
         limits:
@@ -92,8 +92,7 @@ services:
     environment:
       - CHECK_INTERVAL=30
     command: >
-      sh -c "
-      while true; do
+      sh -c "while true; do
         if ! docker ps | grep -q vartapravah_app; then
           echo '[ERROR] App service down at '$(date)' - Restarting...' >> /logs/watchdog.log;
           docker restart vartapravah_app;
@@ -105,8 +104,7 @@ services:
           sleep 5;
         fi;
         sleep 30;
-      done
-      "
+      done"
     deploy:
       resources:
         limits:
