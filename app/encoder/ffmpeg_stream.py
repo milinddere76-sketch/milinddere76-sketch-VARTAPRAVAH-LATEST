@@ -2,6 +2,7 @@ import os
 import subprocess
 import logging
 import time
+import shutil
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,6 +17,17 @@ VIDEO_BITRATE = os.getenv('VIDEO_BITRATE', '3000k')
 YOUTUBE_STREAM_KEY = os.getenv('YOUTUBE_STREAM_KEY')
 
 logger = logging.getLogger(__name__)
+
+# Locate ffmpeg binary
+FFMPEG_BIN = shutil.which('ffmpeg')
+if not FFMPEG_BIN:
+    # Try common paths if not in PATH
+    for path in ['/usr/bin/ffmpeg', '/usr/local/bin/ffmpeg', '/bin/ffmpeg']:
+        if os.path.exists(path):
+            FFMPEG_BIN = path
+            break
+    if not FFMPEG_BIN:
+        logger.warning("FFmpeg binary not found in system PATH")
 
 class FFmpegStreamer:
     def __init__(self):
@@ -40,8 +52,11 @@ class FFmpegStreamer:
 
             vf = f"{filters[0]}drawtext=fontfile='{self.font_path}':textfile='{os.path.join(TEMP_DIR, 'ticker.txt')}':fontsize=40:fontcolor=white:box=1:boxcolor=black@0.5:x=(w-text_w)/2:y=h-100:scroll=1"
 
+            if not FFMPEG_BIN:
+                raise RuntimeError("FFmpeg binary not found. Please install FFmpeg.")
+            
             cmd = [
-                'ffmpeg', '-y'
+                FFMPEG_BIN, '-y'
             ] + inputs + [
                 '-c:v', 'libx264', '-tune', 'stillimage', '-c:a', 'aac',
                 '-b:a', AUDIO_BITRATE, '-b:v', VIDEO_BITRATE,
@@ -49,7 +64,7 @@ class FFmpegStreamer:
                 '-vf', vf,
                 '-f', 'mp4', output_path
             ]
-            subprocess.run(cmd, check=True)
+            subprocess.run(cmd, check=True, capture_output=False)
             logger.info(f"Video created: {output_path}")
         except subprocess.CalledProcessError as e:
             logger.error(f"FFmpeg error: {e}")
@@ -58,8 +73,12 @@ class FFmpegStreamer:
     def stream_to_youtube(self, video_path: str):
         """Stream video to YouTube Live with loop."""
         rtmp_url = f"rtmp://a.rtmp.youtube.com/live2/{YOUTUBE_STREAM_KEY}"
+        
+        if not FFMPEG_BIN:
+            raise RuntimeError("FFmpeg binary not found. Please install FFmpeg.")
+        
         cmd = [
-            'ffmpeg', '-re', '-stream_loop', '-1', '-i', video_path,
+            FFMPEG_BIN, '-re', '-stream_loop', '-1', '-i', video_path,
             '-c:v', 'libx264', '-preset', 'veryfast', '-b:v', VIDEO_BITRATE,
             '-c:a', 'aac', '-b:a', AUDIO_BITRATE,
             '-f', 'flv', rtmp_url
@@ -82,6 +101,9 @@ class FFmpegStreamer:
                 logger.error("No videos to stream")
                 return
 
+        if not FFMPEG_BIN:
+            raise RuntimeError("FFmpeg binary not found. Please install FFmpeg.")
+
         # Create concat file
         concat_file = os.path.join(TEMP_DIR, 'playlist.txt')
         with open(concat_file, 'w') as f:
@@ -90,7 +112,7 @@ class FFmpegStreamer:
 
         rtmp_url = f"rtmp://a.rtmp.youtube.com/live2/{YOUTUBE_STREAM_KEY}"
         cmd = [
-            'ffmpeg', '-f', 'concat', '-safe', '0', '-i', concat_file,
+            FFMPEG_BIN, '-f', 'concat', '-safe', '0', '-i', concat_file,
             '-c', 'copy', '-f', 'flv', rtmp_url
         ]
         try:
@@ -117,8 +139,12 @@ class FFmpegStreamer:
         with open(concat_file, 'w') as f:
             for path in video_paths:
                 f.write(f"file '{path}'\n")
+        
+        if not FFMPEG_BIN:
+            raise RuntimeError("FFmpeg binary not found. Please install FFmpeg.")
+        
         cmd = [
-            'ffmpeg', '-f', 'concat', '-safe', '0', '-i', concat_file,
+            FFMPEG_BIN, '-f', 'concat', '-safe', '0', '-i', concat_file,
             '-c', 'copy', output_path
         ]
-        subprocess.run(cmd, check=True)
+        subprocess.run(cmd, check=True, capture_output=False)
