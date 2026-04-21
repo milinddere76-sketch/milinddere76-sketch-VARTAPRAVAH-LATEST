@@ -8,12 +8,13 @@ COPY --from=ffmpeg-stage /usr/local/lib /usr/local/lib
 # Set library path
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install build dependencies with retries
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends \
     git wget build-essential python3-dev \
     libsndfile1 libsndfile1-dev \
     espeak-ng libespeak-ng1 libespeak-ng-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Copy requirements and install in stages
 COPY requirements.txt .
@@ -54,9 +55,10 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 # Install only runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git libsndfile1 espeak-ng libespeak-ng1 && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends \
+    git libsndfile1 espeak-ng libespeak-ng1 \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Set working directory
 WORKDIR /app
