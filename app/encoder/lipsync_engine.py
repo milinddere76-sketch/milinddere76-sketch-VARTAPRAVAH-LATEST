@@ -9,9 +9,17 @@ from pathlib import Path
 # =========================
 try:
     from TTS.api import TTS
+    TTS_AVAILABLE = True
 except ImportError:
     TTS = None
+    TTS_AVAILABLE = False
     logging.warning("TTS not installed. Install with: pip install TTS")
+except Exception as e:
+    # Handle PyTorch DLL errors on Windows
+    TTS = None
+    TTS_AVAILABLE = False
+    logging.warning(f"TTS initialization failed (likely PyTorch issue): {e}")
+    logging.warning("On Windows, install: https://aka.ms/vs/17/release/vc_redist.x64.exe")
 
 load_dotenv()
 TEMP_DIR = os.getenv('TEMP_DIR', 'app/temp')
@@ -29,16 +37,16 @@ _tts_model = None
 def get_tts_model():
     """Lazy load TTS model to avoid startup delays."""
     global _tts_model
-    if _tts_model is None and TTS is not None:
+    if _tts_model is None and TTS_AVAILABLE and TTS is not None:
         try:
-            logger.info("🎙️ Loading Coqui XTTS v2 model...")
+            logger.info("Loading Coqui XTTS v2 model...")
             _tts_model = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
-            logger.info("✅ Coqui TTS model loaded")
+            logger.info("Coqui TTS model loaded")
         except Exception as e:
             logger.warning(f"Failed to load TTS on GPU, trying CPU: {e}")
             try:
                 _tts_model = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2", gpu=False)
-                logger.info("✅ Coqui TTS model loaded (CPU)")
+                logger.info("Coqui TTS model loaded (CPU)")
             except Exception as e:
                 logger.error(f"Failed to load TTS: {e}")
                 _tts_model = None

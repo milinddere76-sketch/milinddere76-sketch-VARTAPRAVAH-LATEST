@@ -65,8 +65,9 @@ class FFmpegStreamer:
             '-f', 'flv', rtmp_url
         ]
         try:
-            self.stream_process = subprocess.Popen(cmd)
+            self.stream_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             logger.info("Started streaming to YouTube with loop")
+            return self.stream_process
         except Exception as e:
             logger.error(f"Error starting stream: {e}")
             raise

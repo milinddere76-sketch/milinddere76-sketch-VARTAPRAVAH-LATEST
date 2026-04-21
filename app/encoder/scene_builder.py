@@ -2,6 +2,7 @@ import os
 import subprocess
 import logging
 from dotenv import load_dotenv
+from graphics_engine import GraphicsEngine
 
 load_dotenv()
 ASSETS_DIR = os.getenv('ASSETS_DIR', 'app/assets')
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 class SceneBuilder:
     def __init__(self):
         self.studio_path = os.path.join(ASSETS_DIR, 'studio.jpg')
+        self.graphics_engine = GraphicsEngine()
 
     def build_scene(self, anchor_video: str, headline: str, ticker_text: str, breaking: bool, output_path: str):
         """Build final scene with all layers."""
@@ -31,9 +33,7 @@ class SceneBuilder:
         subprocess.run(cmd_bg, check=True)
 
         # Now add graphics
-        from graphics_engine import GraphicsEngine
-        ge = GraphicsEngine()
-        ge.add_graphics(temp_bg_video, headline, ticker_text, breaking, output_path)
+        self.graphics_engine.add_graphics(temp_bg_video, headline, ticker_text, breaking, output_path)
 
         logger.info(f"Scene built: {output_path}")
         return output_path

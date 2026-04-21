@@ -36,11 +36,12 @@ class GraphicsEngine:
             filters.append(f"[lower][3:v]overlay=x=0:y=0[break]")
 
         # Ticker
-        ticker_filter = f"drawtext=fontfile='{FONT_PATH}':textfile='{os.path.join(TEMP_DIR, 'ticker.txt')}':fontsize=40:fontcolor=white:box=1:boxcolor=black@0.5:x=w-mod(t*150,w+tw):y=h-100"
+        ticker_text_file = os.path.join(TEMP_DIR, 'ticker.txt')
+        ticker_filter = f"drawtext=fontfile='{FONT_PATH}':textfile='{ticker_text_file}':fontsize=40:fontcolor=white:box=1:boxcolor=black@0.5:x=w-mod(t*150,w+tw):y=h-100"
         filters.append(f"[break]{ticker_filter}[ticker]")
 
         # Clock
-        clock_filter = f"drawtext=fontfile='{FONT_PATH}':text='%{localtime\\: %H\\:%M\\:%S}':fontsize=30:fontcolor=white:x=10:y=10"
+        clock_filter = "drawtext=fontfile='" + FONT_PATH + "':text='%{localtime}':fontsize=30:fontcolor=white:x=10:y=10"
         filters.append(f"[ticker]{clock_filter}[final]")
 
         # Headline on lower third

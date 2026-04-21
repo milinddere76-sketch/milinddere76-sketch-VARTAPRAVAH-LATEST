@@ -296,18 +296,19 @@ def to_marathi_ai(text: str, api_type: str = "groq") -> str:
         try:
             # Groq API call
             headers = {"Authorization": f"Bearer {api_key}"}
+            marathi_prompt = """खालील बातमी शुद्ध, व्यावसायिक मराठी न्यूज अँकर शैलीत लिहा.
+कोणतेही इंग्रजी शब्द वापरू नका. फक्त मराठी.
+
+मूळ बातमी:
+{}
+
+शुद्ध मराठी:"""
             payload = {
                 "model": "mixtral-8x7b-32768",
                 "messages": [
                     {
                         "role": "user",
-                        "content": f"""खालील बातमी शुद्ध, व्यावसायिक मराठी न्यूज अँकर शैलीत लिहा.
-कोणतेही इंग्रजी शब्द वापरू नका. फक्त मराठी.
-
-मूळ बातमी:
-{text}
-
-शुद्ध मराठी:"
+                        "content": marathi_prompt.format(text)
                     }
                 ]
             }
@@ -340,13 +341,13 @@ def to_marathi_ai(text: str, api_type: str = "groq") -> str:
                 "messages": [
                     {
                         "role": "user",
-                        "content": f"""खालील बातमी शुद्ध, व्यावसायिक मराठी न्यूज अँकर शैलीत लिहा.
+                        "content": """खालील बातमी शुद्ध, व्यावसायिक मराठी न्यूज अँकर शैलीत लिहा.
 कोणतेही इंग्रजी शब्द वापरू नका. फक्त मराठी.
 
 मूळ बातमी:
-{text}
+{}
 
-शुद्ध मराठी:"
+शुद्ध मराठी:""".format(text)
                     }
                 ]
             }

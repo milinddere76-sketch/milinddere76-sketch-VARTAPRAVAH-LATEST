@@ -4,7 +4,7 @@ Enforces minimum/maximum news limits and breaking news thresholds
 """
 
 import logging
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +84,7 @@ class NewsGenerationRules:
         return result
     
     @staticmethod
-    def enforce_limits(news_list: List[Dict]) -> tuple[List[Dict], Dict]:
+    def enforce_limits(news_list: List[Dict]) -> Tuple[List[Dict], Dict]:
         """
         Enforce generation rules on news list.
         
