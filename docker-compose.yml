@@ -17,29 +17,12 @@ services:
       - vartapravah_network
     environment:
       - PYTHONUNBUFFERED=1
-
-  streamer:
-    image: jrottenberg/ffmpeg:6.0-alpine
-    container_name: vartapravah_stream
-    restart: always
-    depends_on:
-      - app
-    volumes:
-      - ./videos:/videos
-    networks:
-      - vartapravah_network
-    environment:
-      - YOUTUBE_STREAM_KEY=${YOUTUBE_STREAM_KEY}
-    command: >
-      -re -stream_loop -1 -i /videos/fallback.mp4
-      -c:v libx264 -preset veryfast -b:v 3000k
-      -c:a aac -b:a 128k -f flv 
-      rtmp://a.rtmp.youtube.com/live2/${YOUTUBE_STREAM_KEY}
     healthcheck:
-      test: ["CMD", "ps", "aux"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 10s
 
   watchdog:
     image: docker:latest
@@ -51,26 +34,16 @@ services:
       - vartapravah_network
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: >
-      sh -c "while true; do
-        STREAM_RUNNING=\$(docker ps --filter 'name=vartapravah_stream' --format '{{.ID}}' 2>/dev/null);
-        APP_RUNNING=\$(docker ps --filter 'name=vartapravah_app' --format '{{.ID}}' 2>/dev/null);
-        STREAM_EXISTS=\$(docker ps -a --filter 'name=vartapravah_stream' --format '{{.ID}}' 2>/dev/null);
-        APP_EXISTS=\$(docker ps -a --filter 'name=vartapravah_app' --format '{{.ID}}' 2>/dev/null);
-        
-        if [ -z \"\$STREAM_RUNNING\" ] && [ -n \"\$STREAM_EXISTS\" ]; then
-          echo '[Watchdog] Stream container exists but not running, attempting start...';
-          docker start vartapravah_stream 2>&1 || echo '[Watchdog] Failed to start stream';
-        fi;
-        
-        if [ -z \"\$APP_RUNNING\" ] && [ -n \"\$APP_EXISTS\" ]; then
-          echo '[Watchdog] App container exists but not running, attempting start...';
-          docker start vartapravah_app 2>&1 || echo '[Watchdog] Failed to start app';
-        fi;
-        
-        echo \"[Watchdog] Health check - Stream: \${STREAM_RUNNING:-down}, App: \${APP_RUNNING:-down}\";
-        sleep 30;
-      done"
+    entrypoint: /bin/sh
+    command: -c 'while true; do
+      RUNNING=$$(docker ps --filter name=vartapravah_app --quiet);
+      EXISTS=$$(docker ps -a --filter name=vartapravah_app --quiet);
+      if [ -n "$$EXISTS" ] && [ -z "$$RUNNING" ]; then
+        echo "[Watchdog] App not running, starting...";
+        docker start vartapravah_app 2>&1 || true;
+      fi;
+      sleep 30;
+      done'
 
 networks:
   vartapravah_network:
