@@ -1,6 +1,10 @@
+FROM jrottenberg/ffmpeg:latest AS ffmpeg-stage
 FROM python:3.11
 
-# Install git and dependencies (ffmpeg will be handled separately)
+# Copy ffmpeg from the official ffmpeg image
+COPY --from=ffmpeg-stage / /
+
+# Install git and dependencies
 RUN apt-get update && apt-get install -y git wget && rm -rf /var/lib/apt/lists/*
 
 # Install build essentials and audio libraries for TTS
@@ -16,14 +20,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Set working directory
 WORKDIR /app
-
-# Download and install ffmpeg static binary
-RUN mkdir -p /tmp/ffmpeg && cd /tmp/ffmpeg && \
-    wget -q https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz && \
-    tar xf ffmpeg-release-amd64-static.tar.xz && \
-    mv ffmpeg-*/ffmpeg /usr/local/bin/ && \
-    chmod +x /usr/local/bin/ffmpeg && \
-    rm -rf /tmp/ffmpeg
 
 # Copy requirements and install in stages
 COPY requirements.txt .
