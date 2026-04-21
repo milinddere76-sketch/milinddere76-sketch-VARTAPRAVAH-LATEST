@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11
 
 # Install FFmpeg and git
 RUN apt-get update && apt-get install -y ffmpeg git wget && rm -rf /var/lib/apt/lists/*
