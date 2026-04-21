@@ -3,10 +3,11 @@ fastapi==0.104.1
 uvicorn==0.24.0
 pydantic==2.5.0
 pillow==10.1.0
-numpy==1.24.3
+numpy==1.22.0 # Required by TTS 0.22.0 on Python 3.10
 opencv-python==4.8.1.78
 python-dotenv==1.0.0
 aiofiles==23.2.1
-requests==2.31.0
+requests==2.25.1
 google-cloud-translate==3.14.0
 groq==0.4.2
+pandas>=1.5.0
