@@ -48,7 +48,6 @@ FROM --platform=linux/amd64 python:3.11
 COPY --from=ffmpeg-stage /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
 COPY --from=ffmpeg-stage /usr/local/lib /usr/local/lib
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-RUN ldconfig 2>/dev/null || true
 
 # Copy installed Python packages and all binaries from builder
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
