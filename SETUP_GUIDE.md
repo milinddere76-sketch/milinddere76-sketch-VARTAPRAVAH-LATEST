@@ -264,7 +264,7 @@ docker-compose up -d
 ```bash
 sudo systemctl enable docker
 # Add to crontab:
-@reboot cd /path/to/vartapravah && docker-compose up -d
+@reboot cd C:\VARTAPRAVAH-LATEST && docker-compose up -d
 ```
 
 ### Reverse Proxy (Nginx)

@@ -168,8 +168,8 @@ After=docker-compose.service
 
 [Service]
 Type=simple
-WorkingDirectory=/path/to/vartapravah
-ExecStart=/path/to/vartapravah/stream-monitor.sh
+WorkingDirectory=C:\VARTAPRAVAH-LATEST
+ExecStart=C:\VARTAPRAVAH-LATEST\stream-monitor.sh
 Restart=on-failure
 RestartSec=10
 
@@ -361,8 +361,8 @@ Wants=docker-compose.service
 [Service]
 Type=simple
 User=vartapravah
-WorkingDirectory=/home/vartapravah/vartapravah
-ExecStart=/home/vartapravah/vartapravah/stream-monitor.sh
+WorkingDirectory=C:\VARTAPRAVAH-LATEST
+ExecStart=C:\VARTAPRAVAH-LATEST\stream-monitor.sh
 Restart=on-failure
 RestartSec=30
 StandardOutput=journal
