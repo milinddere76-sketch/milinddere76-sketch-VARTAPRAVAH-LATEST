@@ -1,8 +1,13 @@
 FROM jrottenberg/ffmpeg:latest AS ffmpeg-stage
 FROM python:3.11
 
-# Copy ffmpeg from the official ffmpeg image
-COPY --from=ffmpeg-stage / /
+# Copy only ffmpeg binary and required libraries from ffmpeg stage
+COPY --from=ffmpeg-stage /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
+COPY --from=ffmpeg-stage /usr/local/lib /usr/local/lib
+
+# Set library path and update library cache
+ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+RUN ldconfig 2>/dev/null || true
 
 # Install git and dependencies
 RUN apt-get update && apt-get install -y git wget && rm -rf /var/lib/apt/lists/*
