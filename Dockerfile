@@ -6,11 +6,42 @@ RUN apt-get update && apt-get install -y ffmpeg git wget && rm -rf /var/lib/apt/
 # Set working directory
 WORKDIR /app
 
-# Copy requirements and install
+# Copy requirements and install in stages
 COPY requirements.txt .
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir --default-timeout=1000 -r requirements.txt || \
-    pip install --no-cache-dir --default-timeout=1000 -r requirements.txt
+
+# Stage 1: Upgrade pip and install core dependencies
+RUN pip install --upgrade pip setuptools wheel
+
+# Stage 2: Install packages with extended timeout and retries
+RUN pip install --default-timeout=1000 --retries 5 \
+    fastapi==0.104.1 \
+    uvicorn==0.24.0 \
+    pydantic==2.5.0 \
+    python-dotenv==1.0.0 \
+    requests==2.31.0 \
+    feedparser==6.0.10 \
+    pillow==10.1.0 \
+    ffmpeg-python==0.2.0 \
+    apscheduler==3.10.4 \
+    groq==0.4.2 \
+    wavefile==1.6.3
+
+# Stage 3: Install heavy ML packages
+RUN pip install --default-timeout=1000 --retries 5 \
+    numpy==1.24.3 \
+    scipy==1.11.4 \
+    librosa==0.10.0 \
+    opencv-python==4.8.1.78
+
+# Stage 4: Install ML frameworks
+RUN pip install --default-timeout=1000 --retries 5 \
+    torch==2.1.2 \
+    torchvision==0.16.2 \
+    transformers>=5.0.0
+
+# Stage 5: Install TTS (heaviest package)
+RUN pip install --default-timeout=1000 --retries 5 \
+    TTS>=0.22.0
 
 # Copy application code
 COPY . .
