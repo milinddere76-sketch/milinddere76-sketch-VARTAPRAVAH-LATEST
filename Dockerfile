@@ -1,16 +1,20 @@
-FROM --platform=linux/amd64 jrottenberg/ffmpeg:latest AS ffmpeg-stage
-FROM --platform=linux/amd64 python:3.11 AS builder
+FROM --platform=linux/amd64 python:3.11-slim-bullseye AS builder
 
-# Copy only ffmpeg binary from ffmpeg stage (skip libs to avoid conflicts)
-COPY --from=ffmpeg-stage /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
-
-# Install build dependencies
-RUN apt-get update -qq && \
-    apt-get install -y --no-install-recommends --fix-missing \
-    git wget build-essential python3-dev \
+# Install build dependencies with explicit retry logic
+RUN apt-get update -qq --allow-unauthenticated || true && \
+    apt-get install -y --no-install-recommends --allow-unauthenticated \
+    git wget curl ca-certificates \
+    build-essential python3-dev \
     libsndfile1 libsndfile1-dev \
     espeak-ng libespeak-ng1 libespeak-ng-dev \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    ffmpeg || (apt-get update && apt-get install -y --no-install-recommends --allow-unauthenticated \
+    git wget curl ca-certificates \
+    build-essential python3-dev \
+    libsndfile1 libsndfile1-dev \
+    espeak-ng libespeak-ng1 libespeak-ng-dev \
+    ffmpeg) && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Copy requirements and install in stages
 COPY requirements.txt .
@@ -39,20 +43,19 @@ RUN pip install --no-cache-dir --default-timeout=1000 --retries 5 --prefer-binar
     pip cache purge
 
 # Final stage
-FROM --platform=linux/amd64 python:3.11
-
-# Copy only ffmpeg binary from ffmpeg stage
-COPY --from=ffmpeg-stage /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
-
-# Copy installed Python packages and all binaries from builder
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=builder /usr/local/bin/ /usr/local/bin/
+FROM --platform=linux/amd64 python:3.11-slim-bullseye
 
 # Install only runtime dependencies
-RUN apt-get update -qq && \
-    apt-get install -y --no-install-recommends --fix-missing \
-    git libsndfile1 espeak-ng libespeak-ng1 \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt-get update -qq --allow-unauthenticated || true && \
+    apt-get install -y --no-install-recommends --allow-unauthenticated \
+    git curl ca-certificates \
+    libsndfile1 espeak-ng libespeak-ng1 \
+    ffmpeg || (apt-get update && apt-get install -y --no-install-recommends --allow-unauthenticated \
+    git curl ca-certificates \
+    libsndfile1 espeak-ng libespeak-ng1 \
+    ffmpeg) && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Set working directory
 WORKDIR /app
