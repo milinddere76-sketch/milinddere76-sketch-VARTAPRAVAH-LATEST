@@ -1,5 +1,5 @@
-FROM jrottenberg/ffmpeg:latest AS ffmpeg-stage
-FROM python:3.11 AS builder
+FROM --platform=linux/amd64 jrottenberg/ffmpeg:latest AS ffmpeg-stage
+FROM --platform=linux/amd64 python:3.11 AS builder
 
 # Copy only ffmpeg binary and required libraries from ffmpeg stage
 COPY --from=ffmpeg-stage /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
@@ -42,7 +42,7 @@ RUN pip install --no-cache-dir --default-timeout=1000 --retries 5 --prefer-binar
     pip cache purge
 
 # Final stage
-FROM python:3.11
+FROM --platform=linux/amd64 python:3.11
 
 # Copy ffmpeg binaries and libraries
 COPY --from=ffmpeg-stage /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
@@ -50,9 +50,9 @@ COPY --from=ffmpeg-stage /usr/local/lib /usr/local/lib
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 RUN ldconfig 2>/dev/null || true
 
-# Copy installed Python packages from builder
+# Copy installed Python packages and all binaries from builder
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=builder /usr/local/bin/pip* /usr/local/bin/
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 # Install only runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
