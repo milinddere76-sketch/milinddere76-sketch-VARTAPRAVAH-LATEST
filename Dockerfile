@@ -1,7 +1,30 @@
 FROM python:3.11-slim
 
-# Install FFmpeg and git
-RUN apt-get update && apt-get install -y ffmpeg git wget && rm -rf /var/lib/apt/lists/*
+# Install FFmpeg, git, and build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    git \
+    wget \
+    curl \
+    build-essential \
+    gcc \
+    g++ \
+    gfortran \
+    make \
+    pkg-config \
+    libsndfile1 \
+    libsndfile1-dev \
+    libsamplerate0-dev \
+    espeak-ng \
+    libespeak-ng1 \
+    libespeak-ng-dev \
+    alsa-utils \
+    libasound2-dev \
+    libopenblas-dev \
+    liblapack-dev \
+    libatlas-base-dev \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -10,7 +33,8 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Stage 1: Upgrade pip and install core dependencies
-RUN pip install --upgrade pip setuptools wheel
+RUN pip install --upgrade pip setuptools wheel && \
+    pip config set global.prefer-binary true
 
 # Stage 2: Install packages with extended timeout and retries
 RUN pip install --default-timeout=1000 --retries 5 \
@@ -39,9 +63,11 @@ RUN pip install --default-timeout=1000 --retries 5 \
     torchvision==0.16.2 \
     transformers>=5.0.0
 
-# Stage 5: Install TTS (heaviest package)
-RUN pip install --default-timeout=1000 --retries 5 \
-    TTS>=0.22.0
+# Stage 5: Install TTS dependencies first, then TTS itself
+RUN pip install --default-timeout=1000 --retries 5 --prefer-binary \
+    numpy==1.24.3 scipy==1.11.4 && \
+    pip install --default-timeout=1000 --retries 5 --prefer-binary \
+    TTS==0.22.0
 
 # Copy application code
 COPY . .
