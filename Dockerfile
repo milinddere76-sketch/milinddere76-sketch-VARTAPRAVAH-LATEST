@@ -1,67 +1,97 @@
-FROM --platform=linux/amd64 python:3.11-alpine AS builder
+# =========================
+# BASE IMAGE (Debian - STABLE)
+# =========================
+FROM python:3.11-slim
 
-# Install minimal build dependencies using apk (Alpine package manager - more reliable)
-RUN apk add --no-cache --update \
-    gcc musl-dev linux-headers \
-    git wget curl \
-    ffmpeg
+# =========================
+# SYSTEM DEPENDENCIES
+# =========================
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    g++ \
+    git \
+    curl \
+    ffmpeg \
+    libgl1 \
+    libglib2.0-0 \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
+# =========================
+# WORKDIR
+# =========================
 WORKDIR /app
 
-# Copy requirements
+# =========================
+# COPY REQUIREMENTS (OPTIONAL)
+# =========================
 COPY requirements.txt .
 
-# Upgrade pip
+# =========================
+# UPGRADE PIP
+# =========================
 RUN pip install --upgrade pip setuptools wheel
 
-# Install Python packages - remove problematic ones
-RUN pip install --no-cache-dir --default-timeout=1000 --retries 5 \
-    fastapi==0.104.1 uvicorn==0.24.0 pydantic==2.5.0 python-dotenv==1.0.0 \
-    requests==2.31.0 feedparser==6.0.10 pillow==10.1.0 \
-    apscheduler==3.10.4 groq==0.4.2 && \
-    pip cache purge
+# =========================
+# INSTALL CORE PACKAGES
+# =========================
+RUN pip install --no-cache-dir \
+    fastapi==0.104.1 \
+    uvicorn==0.24.0 \
+    pydantic==2.5.0 \
+    python-dotenv==1.0.0 \
+    requests==2.31.0 \
+    feedparser==6.0.10 \
+    pillow==10.1.0 \
+    apscheduler==3.10.4 \
+    groq==0.4.2
 
-RUN pip install --no-cache-dir --default-timeout=1000 --retries 5 \
-    numpy==1.24.3 librosa==0.10.0 opencv-python==4.8.1.78 && \
-    pip cache purge
+# =========================
+# INSTALL AI / AUDIO / VIDEO LIBS
+# =========================
+RUN pip install --no-cache-dir \
+    numpy==1.24.3 \
+    numba==0.57.1 \
+    llvmlite==0.40.1 \
+    librosa==0.10.0 \
+    opencv-python-headless==4.8.1.78
 
-# Install PyTorch CPU-only (smaller footprint)
-RUN pip install --no-cache-dir --default-timeout=1000 --retries 5 \
-    torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cpu && \
-    pip cache purge
+# =========================
+# INSTALL PYTORCH (CPU)
+# =========================
+RUN pip install --no-cache-dir \
+    torch==2.1.2 \
+    torchvision==0.16.2 \
+    --index-url https://download.pytorch.org/whl/cpu
 
-# Install TTS
-RUN pip install --no-cache-dir --default-timeout=1000 --retries 5 TTS==0.22.0 && \
-    pip cache purge
+# =========================
+# INSTALL TTS
+# =========================
+RUN pip install --no-cache-dir TTS==0.22.0
 
-# Final stage - minimal runtime image
-FROM --platform=linux/amd64 python:3.11-alpine
-
-# Install only essential runtime dependencies using apk
-RUN apk add --no-cache --update \
-    git curl \
-    ffmpeg
-
-# Set working directory
-WORKDIR /app
-
-# Copy installed Python packages from builder
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=builder /usr/local/bin/ /usr/local/bin/
-
-# Copy application code
+# =========================
+# COPY APP
+# =========================
 COPY . .
 
-# Create necessary directories
+# =========================
+# CREATE DIRECTORIES
+# =========================
 RUN mkdir -p videos temp logs assets/anchors assets/fonts assets/graphics
 
-# Expose port
+# =========================
+# EXPOSE PORT
+# =========================
 EXPOSE 8000
 
-# Health check
+# =========================
+# HEALTHCHECK
+# =========================
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()" || exit 1
+CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()" || exit 1
 
-# Run application
+# =========================
+# START APP
+# =========================
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
