@@ -4,9 +4,9 @@ FROM --platform=linux/amd64 python:3.11 AS builder
 # Copy only ffmpeg binary from ffmpeg stage (skip libs to avoid conflicts)
 COPY --from=ffmpeg-stage /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
 
-# Install build dependencies with explicit apt-get options
-RUN apt-get update --allow-releaseinfo-change -qq && \
-    apt-get install -y --no-install-recommends \
+# Install build dependencies
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends --fix-missing \
     git wget build-essential python3-dev \
     libsndfile1 libsndfile1-dev \
     espeak-ng libespeak-ng1 libespeak-ng-dev \
@@ -49,8 +49,8 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 # Install only runtime dependencies
-RUN apt-get update -qq --allow-releaseinfo-change && \
-    apt-get install -y --no-install-recommends \
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends --fix-missing \
     git libsndfile1 espeak-ng libespeak-ng1 \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
