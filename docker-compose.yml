@@ -53,14 +53,22 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     command: >
       sh -c "while true; do
-        if ! docker ps | grep -q vartapravah_stream; then
-          echo 'Stream service down, restarting...';
-          docker restart vartapravah_stream;
+        STREAM_RUNNING=\$(docker ps --filter 'name=vartapravah_stream' --format '{{.ID}}' 2>/dev/null);
+        APP_RUNNING=\$(docker ps --filter 'name=vartapravah_app' --format '{{.ID}}' 2>/dev/null);
+        STREAM_EXISTS=\$(docker ps -a --filter 'name=vartapravah_stream' --format '{{.ID}}' 2>/dev/null);
+        APP_EXISTS=\$(docker ps -a --filter 'name=vartapravah_app' --format '{{.ID}}' 2>/dev/null);
+        
+        if [ -z \"\$STREAM_RUNNING\" ] && [ -n \"\$STREAM_EXISTS\" ]; then
+          echo '[Watchdog] Stream container exists but not running, attempting start...';
+          docker start vartapravah_stream 2>&1 || echo '[Watchdog] Failed to start stream';
         fi;
-        if ! docker ps | grep -q vartapravah_app; then
-          echo 'App service down, restarting...';
-          docker restart vartapravah_app;
+        
+        if [ -z \"\$APP_RUNNING\" ] && [ -n \"\$APP_EXISTS\" ]; then
+          echo '[Watchdog] App container exists but not running, attempting start...';
+          docker start vartapravah_app 2>&1 || echo '[Watchdog] Failed to start app';
         fi;
+        
+        echo \"[Watchdog] Health check - Stream: \${STREAM_RUNNING:-down}, App: \${APP_RUNNING:-down}\";
         sleep 30;
       done"
 
