@@ -1,15 +1,11 @@
 FROM --platform=linux/amd64 jrottenberg/ffmpeg:latest AS ffmpeg-stage
 FROM --platform=linux/amd64 python:3.11 AS builder
 
-# Copy only ffmpeg binary and required libraries from ffmpeg stage
+# Copy only ffmpeg binary from ffmpeg stage (skip libs to avoid conflicts)
 COPY --from=ffmpeg-stage /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
-COPY --from=ffmpeg-stage /usr/local/lib /usr/local/lib
 
-# Set library path
-ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-
-# Install build dependencies with retries
-RUN apt-get update -qq && \
+# Install build dependencies with explicit apt-get options
+RUN apt-get update --allow-releaseinfo-change -qq && \
     apt-get install -y --no-install-recommends \
     git wget build-essential python3-dev \
     libsndfile1 libsndfile1-dev \
@@ -45,17 +41,15 @@ RUN pip install --no-cache-dir --default-timeout=1000 --retries 5 --prefer-binar
 # Final stage
 FROM --platform=linux/amd64 python:3.11
 
-# Copy ffmpeg binaries and libraries
+# Copy only ffmpeg binary from ffmpeg stage
 COPY --from=ffmpeg-stage /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
-COPY --from=ffmpeg-stage /usr/local/lib /usr/local/lib
-ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 # Copy installed Python packages and all binaries from builder
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 # Install only runtime dependencies
-RUN apt-get update -qq && \
+RUN apt-get update -qq --allow-releaseinfo-change && \
     apt-get install -y --no-install-recommends \
     git libsndfile1 espeak-ng libespeak-ng1 \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
