@@ -47,8 +47,12 @@ class NewsFetcher:
         """
         import os
         
-        self.newsapi_key = newsapi_key or os.getenv("NEWSAPI_KEY", "demo")
-        self.worldnews_key = worldnews_key or os.getenv("WORLDNEWS_API_KEY", "demo")
+        self.newsapi_key = newsapi_key or os.getenv("NEWSAPI_KEY")
+        self.worldnews_key = worldnews_key or os.getenv("WORLDNEWS_API_KEY")
+        
+        if not self.newsapi_key or self.newsapi_key == "demo":
+            logger.error("❌ NEWSAPI_KEY is missing! Please set it in your environment variables.")
+            
         self.newsapi_url = "https://newsapi.org/v2"
         self.worldnews_url = "https://api.worldnewsapi.com"
         

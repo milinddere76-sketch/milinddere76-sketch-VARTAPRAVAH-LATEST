@@ -10,6 +10,11 @@ services:
     env_file: .env
     environment:
       - PYTHONUNBUFFERED=1
+      - NEWSAPI_KEY=${NEWSAPI_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - YOUTUBE_RTMP_URL=${YOUTUBE_RTMP_URL}
+      - TTS_MODEL=${TTS_MODEL:-tts_models/multilingual/multi-dataset/xtts_v2}
+      - COQUI_TOS_AGREED=1
     
     # Volume mounts
     volumes:
