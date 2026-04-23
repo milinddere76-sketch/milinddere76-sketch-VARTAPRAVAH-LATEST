@@ -8,27 +8,28 @@ RUN apt-get update && apt-get install -y \
     curl \
     libsndfile1 \
     espeak-ng \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set workdir
 WORKDIR /app
 
-# Step 1: Install pip & light requirements first
+# Step 1: Install pip & light requirements
 RUN pip install --no-cache-dir --upgrade pip
 COPY requirements.txt .
-# Remove heavy items from requirements.txt temporarily to install light ones
 RUN sed -i '/TTS/d' requirements.txt && \
     sed -i '/transformers/d' requirements.txt && \
     pip install --no-cache-dir -r requirements.txt
 
-# Step 2: Install Torch (CPU) - No torchaudio to save 500MB+
+# Step 2: Install Torch for ARM64 (Oracle Ampere)
+# On ARM, we install standard torch which supports ARM64
 RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
-# Step 3: Install heavy AI components one-by-one to save RAM
+# Step 3: Install heavy AI components
 RUN pip install --no-cache-dir transformers>=4.34.0
 RUN pip install --no-cache-dir TTS>=0.22.0
 
-# Step 4: Wav2Lip
+# Step 4: Wav2Lip Setup
 RUN git clone https://github.com/Rudrabha/Wav2Lip.git && \
     mkdir -p Wav2Lip/checkpoints && \
     curl -L "https://github.com/justinjohn0306/Wav2Lip/releases/download/models/wav2lip.pth" -o Wav2Lip/checkpoints/wav2lip.pth && \
@@ -42,4 +43,4 @@ COPY . .
 ENV COQUI_TOS_AGREED=1
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "app/main.py"]
+CMD ["python", "app/main.py", "tv"]
