@@ -7,6 +7,7 @@ Uses NewsAPI and WorldNews API
 
 import requests
 import logging
+import os
 from datetime import datetime
 from typing import List, Dict, Optional
 from pydantic import BaseModel
@@ -45,7 +46,6 @@ class NewsFetcher:
             newsapi_key: NewsAPI key (get from https://newsapi.org/)
             worldnews_key: WorldNews API key (get from https://worldnewsapi.com/)
         """
-        import os
         
         self.newsapi_key = newsapi_key or os.getenv("NEWSAPI_KEY")
         self.worldnews_key = worldnews_key or os.getenv("WORLDNEWS_API_KEY")
