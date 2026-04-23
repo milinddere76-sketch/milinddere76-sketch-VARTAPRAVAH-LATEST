@@ -55,6 +55,39 @@ class NewsFetcher:
             
         self.newsapi_url = "https://newsapi.org/v2"
         self.worldnews_url = "https://api.worldnewsapi.com"
+        self.cache_file = "output/news_cache.json"
+        self.cache_expiry = 1800  # 30 minutes
+        
+    def _get_cached_news(self) -> Optional[Dict]:
+        """Read news from local cache if not expired"""
+        import json
+        import time
+        
+        if not os.path.exists(self.cache_file):
+            return None
+            
+        try:
+            with open(self.cache_file, 'r') as f:
+                cache = json.load(f)
+                
+            if time.time() - cache.get("timestamp", 0) < self.cache_expiry:
+                logger.info("📦 Using cached news (less than 30 mins old)")
+                return cache.get("data")
+        except:
+            pass
+        return None
+
+    def _save_to_cache(self, data: Dict):
+        """Save news data to local cache"""
+        import json
+        import time
+        
+        try:
+            os.makedirs(os.path.dirname(self.cache_file), exist_ok=True)
+            with open(self.cache_file, 'w') as f:
+                json.dump({"timestamp": time.time(), "data": data}, f)
+        except:
+            pass
         
     def fetch_india_news(self, limit: int = 5) -> List[NewsArticle]:
         """Fetch top India news headlines"""
@@ -160,14 +193,30 @@ class NewsFetcher:
             return []
     
     def fetch_all_news(self, limit: int = 5) -> Dict[str, List[NewsArticle]]:
-        """Fetch news from all categories"""
-        logger.info("🌐 Starting auto news fetch from all sources...")
+        """Fetch news from all categories with caching"""
+        # 1. Try cache first
+        cached = self._get_cached_news()
+        if cached:
+            # Reconstruct NewsArticle objects from dicts
+            result = {}
+            for category, articles in cached.items():
+                result[category] = [NewsArticle(**a) for a in articles]
+            return result
+
+        # 2. Fetch fresh news
+        logger.info("🌐 Starting fresh news fetch from all sources...")
         
-        return {
+        fresh_news = {
             NewsCategory.INDIA: self.fetch_india_news(limit),
             NewsCategory.MAHARASHTRA: self.fetch_maharashtra_news(limit),
             NewsCategory.WORLD: self.fetch_world_news(limit)
         }
+        
+        # 3. Save to cache (convert objects to dicts for JSON)
+        cache_data = {cat: [a.dict() for a in arts] for cat, arts in fresh_news.items()}
+        self._save_to_cache(cache_data)
+        
+        return fresh_news
     
     def filter_duplicate_titles(self, articles: List[NewsArticle]) -> List[NewsArticle]:
         """Remove duplicate articles based on title"""
