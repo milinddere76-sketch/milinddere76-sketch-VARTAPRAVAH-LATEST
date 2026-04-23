@@ -197,11 +197,16 @@ class NewsFetcher:
         # 1. Try cache first
         cached = self._get_cached_news()
         if cached:
-            # Reconstruct NewsArticle objects from dicts
-            result = {}
-            for category, articles in cached.items():
-                result[category] = [NewsArticle(**a) for a in articles]
-            return result
+            # Check if cache is actually empty
+            has_data = any(len(articles) > 0 for articles in cached.values())
+            if has_data:
+                # Reconstruct NewsArticle objects from dicts
+                result = {}
+                for category, articles in cached.items():
+                    result[category] = [NewsArticle(**a) for a in articles]
+                return result
+            else:
+                logger.info("📦 Cache is empty, proceeding to fresh fetch")
 
         # 2. Fetch fresh news
         logger.info("🌐 Starting fresh news fetch from all sources...")
@@ -212,9 +217,13 @@ class NewsFetcher:
             NewsCategory.WORLD: self.fetch_world_news(limit)
         }
         
-        # 3. Save to cache (convert objects to dicts for JSON)
-        cache_data = {cat: [a.dict() for a in arts] for cat, arts in fresh_news.items()}
-        self._save_to_cache(cache_data)
+        # 3. Save to cache ONLY if we have data
+        has_fresh_data = any(len(arts) > 0 for arts in fresh_news.values())
+        if has_fresh_data:
+            cache_data = {cat: [a.dict() for a in arts] for cat, arts in fresh_news.items()}
+            self._save_to_cache(cache_data)
+        else:
+            logger.warning("⚠️ No fresh news found, not updating cache")
         
         return fresh_news
     
