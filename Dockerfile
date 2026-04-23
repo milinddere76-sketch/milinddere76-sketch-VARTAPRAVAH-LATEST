@@ -21,9 +21,8 @@ RUN sed -i '/TTS/d' requirements.txt && \
     sed -i '/transformers/d' requirements.txt && \
     pip install --no-cache-dir -r requirements.txt
 
-# Step 2: Install Torch for ARM64 (Oracle Ampere)
-# On ARM, we install standard torch which supports ARM64
-RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# Step 2: Install Torch (CPU)
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
 # Step 3: Install heavy AI components
 RUN pip install --no-cache-dir transformers>=4.34.0
