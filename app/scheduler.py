@@ -377,8 +377,17 @@ class TVEngine:
                 news = self.news_queue.get_next_news()
             
             if not news:
-                logger.warning("⚠️ No news available, waiting...")
-                time.sleep(LOOP_DELAY)
+                logger.warning("⚠️ No news available, attempting to re-fetch in 10 seconds...")
+                time.sleep(10)
+                # Try to re-fetch if we have no news at all
+                if not self.news_queue.main_news:
+                    logger.info("🔄 Queue is empty, attempting emergency news fetch...")
+                    if self.fetch_and_process_news():
+                        logger.info("✅ Emergency fetch successful!")
+                        continue
+                    else:
+                        logger.warning("❌ Emergency fetch failed, waiting 5 minutes before next try...")
+                        time.sleep(300) 
                 continue
             
             story_count += 1
