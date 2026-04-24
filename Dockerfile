@@ -27,20 +27,9 @@ RUN mkdir -p /app/output /app/app/assets /app/checkpoints /app/Wav2Lip /app/SadT
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# --- Wav2Lip Integration ---
-RUN git clone https://github.com/Rudrabha/Wav2Lip.git /app/Wav2Lip
-WORKDIR /app/Wav2Lip
-RUN sed -i 's/==/>=/g' requirements.txt && \
-    pip install --no-cache-dir -r requirements.txt
+# Wav2Lip is handled by dedicated workers
 
-# --- SadTalker Integration ---
-WORKDIR /app
-RUN git clone https://github.com/OpenTalker/SadTalker.git /app/SadTalker
-WORKDIR /app/SadTalker
-# Installing SadTalker dependencies (skipping torch/torchvision as they are heavy and should be handled by host/base image)
-RUN pip install --no-cache-dir -r requirements.txt
-# Install GFPGAN for professional face enhancement
-RUN pip install gfpgan
+# SadTalker is handled by Dockerfile.sadtalker
 
 WORKDIR /app
 COPY . .
