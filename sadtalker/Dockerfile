@@ -1,6 +1,6 @@
-FROM python:3.10-slim
+FROM python:3.10
 
-# Install system dependencies for AI and OpenCV
+# Install EVERYTHING needed for AI, Video, and Compiling
 RUN apt-get update && apt-get install -y \
     git \
     ffmpeg \
@@ -23,7 +23,6 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 RUN git clone https://github.com/OpenTalker/SadTalker.git
-
 WORKDIR /app/SadTalker
 
 RUN pip install --upgrade pip setuptools wheel
