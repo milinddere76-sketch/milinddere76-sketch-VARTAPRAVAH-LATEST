@@ -17,10 +17,17 @@ output/
 *.key
 *.pem
 
-# Local AI checkpoints and data
-checkpoints/
-SadTalker/
-Wav2Lip/
+# Local AI checkpoints and data (Heavy folders)
+/checkpoints/
+/SadTalker/
+/Wav2Lip/
+
+# Keep our Docker service folders
+!/sadtalker/
+!/tts/
+!/video_worker/
+!/streamer/
+!/app/
 
 # OS generated files
 .DS_Store
