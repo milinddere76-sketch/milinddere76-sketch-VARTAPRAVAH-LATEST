@@ -3,15 +3,20 @@ version: "3.9"
 services:
   # The Light Node (Streaming & Monitoring)
   streamer:
-    build: .
+    build:
+      context: .
+      args:
+        - REQS_FILE=requirements-light.txt
     container_name: vartapravah_streamer
     command: python app/services/stream_engine.py
     restart: always
     env_file: .env
-    # Note: REDIS_HOST in .env must point to Hetzner IP
 
   dashboard:
-    build: .
+    build:
+      context: .
+      args:
+        - REQS_FILE=requirements-light.txt
     container_name: vartapravah_dashboard
     command: uvicorn app.main:app --host 0.0.0.0 --port 80
     restart: always
