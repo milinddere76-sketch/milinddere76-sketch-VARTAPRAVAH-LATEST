@@ -4,6 +4,9 @@ services:
     build: ./app
     container_name: vartapravah_app
     restart: always
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     ports:
       - "8000:8000"
     env_file: .env
@@ -14,11 +17,17 @@ services:
   tts:
     build: ./tts
     container_name: vartapravah_tts
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     restart: always
 
   video_worker:
     build: ./video_worker
     container_name: vartapravah_video
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     restart: always
     volumes:
       - ./output:/app/output
@@ -26,6 +35,9 @@ services:
   sadtalker:
     build: ./sadtalker
     container_name: vartapravah_sadtalker
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     restart: always
     volumes:
       - ./output:/app/output
