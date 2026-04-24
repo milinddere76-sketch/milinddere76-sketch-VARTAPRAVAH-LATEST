@@ -1,25 +1,19 @@
-version: "3.9"
-
 services:
-  # The Light Node (Streaming & Monitoring)
+  # --- LIGHTWEIGHT STREAMING NODE ---
   streamer:
-    build:
-      context: .
-      args:
-        - REQS_FILE=requirements-light.txt
-    container_name: vartapravah_streamer
-    command: python app/services/stream_engine.py
+    build: ./streamer
+    container_name: vartapravah_stream
     restart: always
     env_file: .env
+    volumes:
+      # This points to the SSHFS mount we set up
+      - ./output:/app/videos 
 
   dashboard:
-    build:
-      context: .
-      args:
-        - REQS_FILE=requirements-light.txt
+    build: ./app
     container_name: vartapravah_dashboard
     command: uvicorn app.main:app --host 0.0.0.0 --port 80
     restart: always
-    env_file: .env
     ports:
       - "80:80"
+    env_file: .env
