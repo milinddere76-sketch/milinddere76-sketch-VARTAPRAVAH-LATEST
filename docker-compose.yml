@@ -1,54 +1,50 @@
-version: "3.9"
-
 services:
   app:
-    build: .
-    container_name: app
+    build: 
+      context: .
+      args:
+        - REQS_FILE=requirements.txt
+    container_name: vartapravah_app
     restart: always
-    env_file: .env
-    depends_on:
-      - redis
     ports:
       - "8000:8000"
-
-  worker:
-    build: .
-    container_name: worker
-    command: python app/workers/queue_worker.py
-    restart: always
     env_file: .env
     depends_on:
-      - redis
+      - postgres
+
+  tts:
+    build: ./tts
+    container_name: vartapravah_tts
+    restart: always
+
+  video_worker:
+    build: ./video_worker
+    container_name: vartapravah_video
+    restart: always
+    volumes:
+      - ./output:/app/output
 
   sadtalker:
-    build:
-      context: .
-      dockerfile: Dockerfile.sadtalker
-    container_name: sadtalker
+    build: ./sadtalker
+    container_name: vartapravah_sadtalker
+    restart: always
+    # GPU RESERVATION REMOVED FOR CPU TEST RUN
+    volumes:
+      - ./output:/app/output
+
+  streamer:
+    build: ./streamer
+    container_name: vartapravah_stream
     restart: always
     env_file: .env
-    deploy:
-      replicas: 1 # Strictly 1 job for GPU stability
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
-    depends_on:
-      - redis
 
-  redis:
-    image: redis:7
-    container_name: redis
-    restart: always
-    ports:
-      - "6379:6379"
-
-  db:
+  postgres:
     image: postgres:15
-    container_name: db
+    container_name: postgres
     restart: always
     environment:
       POSTGRES_DB: vartapravah
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     volumes:
       - postgres_data:/var/lib/postgresql/data

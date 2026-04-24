@@ -12,11 +12,15 @@ output/
 !app/assets/*.png
 !app/assets/*.jpg
 
-# Environment variables
+# Environment variables and Keys
 .env
+*.key
+*.pem
 
-# Docker
-.dockerignore
+# Local AI checkpoints and data
+checkpoints/
+SadTalker/
+Wav2Lip/
 
 # OS generated files
 .DS_Store
