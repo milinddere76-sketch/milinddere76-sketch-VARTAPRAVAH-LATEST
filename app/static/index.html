@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VARTAPRAVAH Analytics Dashboard</title>
+    <style>
+        :root {
+            --primary: #007bff;
+            --secondary: #6c757d;
+            --dark: #121212;
+            --card: #1e1e1e;
+            --success: #28a745;
+            --danger: #dc3545;
+            --accent: #00d4ff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--dark);
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #333;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .card {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            transition: 0.3s;
+        }
+        .card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .stat-label { color: #888; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 2.5em; font-weight: bold; margin: 10px 0; color: var(--accent); }
+        .status-badge {
+            background: var(--success);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+        .btn-group { margin-top: 40px; display: flex; gap: 15px; }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-start { background: var(--success); color: white; }
+        .btn-stop { background: var(--danger); color: white; }
+        .btn:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>VARTA PRAVAH <span style="color: var(--accent);">PRO</span></h1>
+        <div id="global-status" class="status-badge">SYSTEM ONLINE</div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <div class="stat-label">Live Viewers</div>
+            <div id="viewers" class="stat-value">---</div>
+            <div style="color: var(--success);">● LIVE</div>
+        </div>
+        <div class="card">
+            <div class="stat-label">Videos Generated</div>
+            <div id="video-count" class="stat-value">---</div>
+            <div>Total Production</div>
+        </div>
+        <div class="card">
+            <div class="stat-label">System Errors</div>
+            <div id="error-count" class="stat-value" style="color: var(--danger);">---</div>
+            <div>Stability Index</div>
+        </div>
+        <div class="card">
+            <div class="stat-label">Estimated Revenue</div>
+            <div id="revenue" class="stat-value" style="color: var(--success);">---</div>
+            <div>Monetization Engine</div>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button onclick="control('start')" class="btn btn-start">▶ START BROADCAST</button>
+        <button onclick="control('stop')" class="btn btn-stop">■ STOP BROADCAST</button>
+    </div>
+
+    <script>
+        async function updateStats() {
+            try {
+                const res = await fetch('/api/analytics');
+                const data = await res.json();
+                
+                document.getElementById('viewers').innerText = data.live_viewers;
+                document.getElementById('video-count').innerText = data.videos_generated;
+                document.getElementById('error-count').innerText = data.errors;
+                document.getElementById('revenue').innerText = data.revenue;
+                
+                const statusBadge = document.getElementById('global-status');
+                statusBadge.innerText = `SYSTEM ${data.status}`;
+                statusBadge.style.background = data.status === 'ONLINE' ? '#28a745' : '#dc3545';
+            } catch (e) {
+                console.error("Dashboard Sync Failed", e);
+            }
+        }
+
+        async function control(action) {
+            const res = await fetch(`/${action}`);
+            const data = await res.json();
+            alert(`Stream Node ${data.status.toUpperCase()}`);
+            updateStats();
+        }
+
+        // Auto-refresh every 5 seconds
+        setInterval(updateStats, 5000);
+        updateStats();
+    </script>
+</body>
+</html>

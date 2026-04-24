@@ -1,19 +1,18 @@
 version: "3.9"
 
 services:
+  # The Heavy Node (AI Processing)
   app:
     build: .
-    container_name: app
+    container_name: vartapravah_backend
     restart: always
     env_file: .env
-    depends_on:
-      - redis
     ports:
       - "8000:8000"
 
   worker:
     build: .
-    container_name: worker
+    container_name: vartapravah_ai_worker
     command: python app/workers/queue_worker.py
     restart: always
     env_file: .env
@@ -28,7 +27,6 @@ services:
     restart: always
     env_file: .env
     deploy:
-      replicas: 1 # Strictly 1 job for GPU stability
       resources:
         reservations:
           devices:
@@ -36,22 +34,18 @@ services:
     depends_on:
       - redis
 
+  scheduler:
+    build: .
+    container_name: vartapravah_scheduler
+    command: python app/scheduler/scheduler.py
+    restart: always
+    env_file: .env
+    depends_on:
+      - redis
+
   redis:
     image: redis:7
-    container_name: redis
+    container_name: vartapravah_redis
     restart: always
     ports:
-      - "6379:6379"
-
-  db:
-    image: postgres:15
-    container_name: db
-    restart: always
-    environment:
-      POSTGRES_DB: vartapravah
-      POSTGRES_PASSWORD: password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
+      - "6379:6379" # Accessible by Oracle node

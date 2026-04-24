@@ -1,53 +1,23 @@
-# Dependencies and artifacts to ignore
-
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-
-# Project specific
+# Output artifacts
 output/
-logs/
-assets/
-*.tmp
-*.temp
+*.mp3
+*.mp4
+*.png
+*.jpg
+!app/assets/*.png
+!app/assets/*.jpg
 
-# Environment
+# Environment variables
 .env
-.env.local
-.env.*.local
 
 # Docker
-docker-compose.override.yml
+.dockerignore
 
-# Models (large files)
-Wav2Lip/checkpoints/*.pth
-.cache/
+# OS generated files
+.DS_Store
+Thumbs.db

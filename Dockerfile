@@ -1,45 +1,50 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
-# Install system deps
-RUN apt-get update && apt-get install -y \
-    build-essential \
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
-    git \
-    curl \
-    libsndfile1 \
     espeak-ng \
+    curl \
+    fontconfig \
+    fonts-noto-hinted \
+    fonts-noto-extra \
+    libfreetype6-dev \
+    gcc \
     python3-dev \
+    git \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    cmake \
     && rm -rf /var/lib/apt/lists/*
 
-# Set workdir
 WORKDIR /app
 
-# Step 1: Install pip & light requirements
-RUN pip install --no-cache-dir --upgrade pip
+# Create necessary directories
+RUN mkdir -p /app/output /app/app/assets /app/checkpoints /app/Wav2Lip /app/SadTalker
+
+# Install main requirements
 COPY requirements.txt .
-RUN sed -i '/TTS/d' requirements.txt && \
-    sed -i '/transformers/d' requirements.txt && \
+RUN pip install --no-cache-dir -r requirements.txt
+
+# --- Wav2Lip Integration ---
+RUN git clone https://github.com/Rudrabha/Wav2Lip.git /app/Wav2Lip
+WORKDIR /app/Wav2Lip
+RUN sed -i 's/==/>=/g' requirements.txt && \
     pip install --no-cache-dir -r requirements.txt
 
-# Step 2: Install Torch (CPU)
-RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+# --- SadTalker Integration ---
+WORKDIR /app
+RUN git clone https://github.com/OpenTalker/SadTalker.git /app/SadTalker
+WORKDIR /app/SadTalker
+# Installing SadTalker dependencies (skipping torch/torchvision as they are heavy and should be handled by host/base image)
+RUN pip install --no-cache-dir -r requirements.txt
+# Install GFPGAN for professional face enhancement
+RUN pip install gfpgan
 
-# Step 3: Install heavy AI components
-RUN pip install --no-cache-dir transformers>=4.34.0
-RUN pip install --no-cache-dir TTS>=0.22.0
-
-# Step 4: Wav2Lip Setup
-RUN git clone https://github.com/Rudrabha/Wav2Lip.git && \
-    mkdir -p Wav2Lip/checkpoints && \
-    curl -L "https://github.com/justinjohn0306/Wav2Lip/releases/download/models/wav2lip.pth" -o Wav2Lip/checkpoints/wav2lip.pth && \
-    mkdir -p Wav2Lip/face_detection/detection/sfd && \
-    curl -L "https://github.com/justinjohn0306/Wav2Lip/releases/download/models/s3fd.pth" -o Wav2Lip/face_detection/detection/sfd/s3fd.pth
-
-# Copy project
+WORKDIR /app
 COPY . .
 
-# Environment
-ENV COQUI_TOS_AGREED=1
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app:/app/Wav2Lip:/app/SadTalker
 
-CMD ["python", "app/main.py", "tv"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
