@@ -21,6 +21,8 @@ TTS_MODEL = "tts_models/multilingual/multi-dataset/xtts_v2"
 MAX_WORKERS = 1 # VERY IMPORTANT: SadTalker is VRAM intensive. Limit to 1 job.
 
 # --- PATHS ---
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ASSETS_DIR = os.path.join(BASE_DIR, "app", "assets")
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
+# This logic ensures paths work correctly both locally and in the Docker sub-service
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # This is the /app folder
+ASSETS_DIR = os.path.join(BASE_DIR, "assets")
+# Output is one level up from the 'app' folder in the root
+OUTPUT_DIR = os.path.join(os.path.dirname(BASE_DIR), "output")
