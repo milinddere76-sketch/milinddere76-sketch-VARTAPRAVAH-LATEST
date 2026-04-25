@@ -14,8 +14,11 @@ app = FastAPI(title="VARTA PRAVAH ENTERPRISE DASHBOARD")
 # Initialize Redis for fast metrics
 r = redis.Redis(host=config.REDIS_HOST, port=int(config.REDIS_PORT))
 
-# Serve static files
+# Serve static files and videos
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+if not os.path.exists("output"):
+    os.makedirs("output")
+app.mount("/videos", StaticFiles(directory="output"), name="videos")
 
 @app.get("/")
 def read_dashboard():
