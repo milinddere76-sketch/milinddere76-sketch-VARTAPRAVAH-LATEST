@@ -7,3 +7,9 @@ sqlalchemy
 psycopg2-binary
 pillow
 redis
+groq
+httpx
+python-multipart
+moviepy
+ffmpeg-python
+TTS

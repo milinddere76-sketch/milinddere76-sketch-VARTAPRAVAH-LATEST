@@ -10,7 +10,7 @@ def generate_ai_video(image, audio):
     job_id = uuid.uuid4()
     output_file = f"/app/output/{job_id}.mp4"
 
-    print(f"🎭 [SADTALKER-WRAPER] Launching Remote GPU Synthesis Job: {job_id}")
+    print(f"🎭 [SADTALKER-WRAPER] Launching Remote CPU Synthesis Job: {job_id}")
 
     # Note: Using 'docker exec' to bridge the standard CPU node to the GPU synthesis node
     cmd = f"""
@@ -18,9 +18,8 @@ def generate_ai_video(image, audio):
     --driven_audio {audio} \
     --source_image {image} \
     --result_dir /app/output \
-    --still \
-    --preprocess full \
-    --size 256
+    --size 256 \
+    --cpu
     """
 
     # Execute the command via the Docker socket bridge

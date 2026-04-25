@@ -1,5 +1,5 @@
 import os
-from app import config
+import config
 
 def create_video(audio_path, output_path, script_text=""):
     """

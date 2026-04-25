@@ -4,10 +4,10 @@ import time
 import os
 import shutil
 from datetime import datetime, timedelta
-from app import config
-from app.services.news_fetcher import fetch_news
-from app.services.script_generator import generate_script
-from app.services.fact_checker import is_verified
+import config
+from services.news_fetcher import fetch_news
+from services.script_generator import generate_script
+from services.fact_checker import is_verified
 
 # Using config for flexibility
 r = redis.Redis(host=config.REDIS_HOST, port=int(config.REDIS_PORT))

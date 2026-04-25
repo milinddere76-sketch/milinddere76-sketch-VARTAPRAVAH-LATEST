@@ -1,6 +1,6 @@
 from groq import Groq
 import os
-from app import config
+import config
 
 # Using config.GROQ_API_KEY for consistency with the project structure
 client = Groq(api_key=config.GROQ_API_KEY or os.getenv("GROQ_API_KEY"))

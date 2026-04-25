@@ -1,6 +1,6 @@
 import os
 import time
-from app import config
+import config
 
 def generate_loop_video(image_path, output_path, duration=10):
     """

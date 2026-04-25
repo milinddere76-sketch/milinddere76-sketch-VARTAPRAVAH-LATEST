@@ -1,5 +1,5 @@
 from TTS.api import TTS
-from app import config
+import config
 import os
 
 tts = None

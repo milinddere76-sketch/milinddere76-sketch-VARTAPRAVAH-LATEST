@@ -2,10 +2,10 @@ import redis
 import json
 import time
 import os
-from app import config
-from app.services.tts_engine import init_tts, generate_audio
-from app.services.lip_sync import generate_ai_anchor
-from app.services.video_engine import VideoEngine
+import config
+from services.tts_engine import init_tts, generate_audio
+from services.sadtalker_engine import generate_ai_video
+from services.video_engine import VideoEngine
 
 # Dedicated SadTalker Worker Configuration
 r = redis.Redis(host=config.REDIS_HOST, port=int(config.REDIS_PORT))
@@ -46,7 +46,7 @@ while True:
         os.makedirs(result_dir, exist_ok=True)
 
         print(f"🎭 [SADTALKER-WORKER] Synthesizing Expressive Face...")
-        generate_ai_anchor(face_image, audio_file, result_dir)
+        generate_ai_video(face_image, audio_file)
 
         # 3. Find the rendered .mp4
         sadtalker_video = None

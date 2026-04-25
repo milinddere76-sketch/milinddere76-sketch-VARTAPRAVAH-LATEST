@@ -2,8 +2,8 @@ import redis
 import json
 import time
 import os
-from app.services.tts_engine import init_tts, generate_audio
-from app.services.sadtalker_engine import generate_ai_video
+from services.tts_engine import init_tts, generate_audio
+from services.sadtalker_engine import generate_ai_video
 
 # Worker Initialization
 r = redis.Redis(host="redis", port=6379)
