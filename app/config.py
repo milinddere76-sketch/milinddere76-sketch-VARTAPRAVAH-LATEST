@@ -12,7 +12,7 @@ QUEUE_NAME = "news_queue"
 # --- API KEYS ---
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
-STREAM_KEY = os.getenv("YOUTUBE_STREAM_KEY", "5w92-9u7p-ucjh-b1bx-bszv")
+STREAM_KEY = os.getenv("YOUTUBE_STREAM_KEY", "qcu7-xesd-m4sv-9zvv-e335")
 
 # --- MODEL CONFIG ---
 TTS_MODEL = "tts_models/multilingual/multi-dataset/xtts_v2"
