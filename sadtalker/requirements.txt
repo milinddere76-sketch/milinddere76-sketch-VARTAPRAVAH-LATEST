@@ -1,8 +1,5 @@
 numpy==1.26.4
 Cython==3.0.5
-torch==2.1.0
-torchvision==0.16.0
-torchaudio==2.1.0
 tqdm==4.66.1
 yacs==0.1.8
 pyyaml==6.0
@@ -15,5 +12,4 @@ imageio-ffmpeg==1.4.1
 kornia==0.7.0
 ninja==1.11.1
 resampy==0.4.2
-dlib-bin==19.24.2
 basicsr==1.4.2
