@@ -1,10 +1,10 @@
-FROM ubuntu:22.04
+FROM python:3.10-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
 
-# 1. Install System Dependencies (Optimized for CPU)
+# 1. Install System Dependencies
 RUN apt-get update && apt-get install -y \
-    python3 python3-pip python3-dev \
     git ffmpeg cmake build-essential wget curl \
     libgl1 libglib2.0-0 libsm6 libxext6 libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -15,23 +15,24 @@ WORKDIR /app
 RUN git clone https://github.com/OpenTalker/SadTalker.git
 WORKDIR /app/SadTalker
 
-# 3. Install Python Deps (Hardened & CPU Optimized)
-RUN pip3 install --upgrade pip setuptools wheel
-RUN pip3 install "numpy==1.26.4" Cython
-RUN pip3 install --no-cache-dir torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cpu
-RUN pip3 install --no-cache-dir \
+# 3. Base Build Tools
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install "numpy==1.26.4" Cython
+
+# 4. Heavy AI Frameworks (CPU Optimized)
+RUN pip install --no-cache-dir torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cpu
+
+# 5. SadTalker Specific AI Tools (Forced NumPy Stability)
+# We use --no-build-isolation to prevent them from pulling NumPy 2.0
+RUN pip install --no-cache-dir --no-build-isolation \
     tqdm yacs pyyaml face-alignment facexlib gfpgan \
     librosa imageio imageio-ffmpeg kornia ninja resampy \
     dlib-bin
 
-# 4. Patch basicsr (Fix for torchvision 0.15+ compatibility)
-RUN sed -i "s/from torchvision.transforms.functional_tensor import rgb_to_grayscale/from torchvision.transforms.functional import rgb_to_grayscale/g" /usr/local/lib/python3.10/dist-packages/basicsr/data/degradations.py
+# 6. Patch basicsr (Compatibility Fix)
+RUN sed -i "s/from torchvision.transforms.functional_tensor import rgb_to_grayscale/from torchvision.transforms.functional import rgb_to_grayscale/g" $(python -c 'import basicsr; print(basicsr.__path__[0])')/data/degradations.py || true
 
-# 4. Clean up
-RUN rm -f requirements.txt && touch requirements.txt
+# 7. Prep models
+RUN mkdir -p checkpoints && bash scripts/download_models.sh
 
-# 5. Prep models directory & Download Checkpoints
-RUN mkdir -p checkpoints
-RUN bash scripts/download_models.sh
-
-CMD ["python3", "inference.py", "--cpu"]
+CMD ["python", "inference.py", "--cpu"]
