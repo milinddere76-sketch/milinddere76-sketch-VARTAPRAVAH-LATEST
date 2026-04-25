@@ -21,8 +21,20 @@ TTS_MODEL = "tts_models/multilingual/multi-dataset/xtts_v2"
 MAX_WORKERS = 1 # VERY IMPORTANT: SadTalker is VRAM intensive. Limit to 1 job.
 
 # --- PATHS ---
-# This logic ensures paths work correctly both locally and in the Docker sub-service
-BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # This is the /app folder
-ASSETS_DIR = os.path.join(BASE_DIR, "assets")
-# Output is one level up from the 'app' folder in the root
-OUTPUT_DIR = os.path.join(os.path.dirname(BASE_DIR), "output")
+def get_assets_dir():
+    # 1. Try relative to this config file (Works locally and in some Docker setups)
+    base = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(base, "assets")
+    if os.path.exists(os.path.join(path, "promo.mp4")):
+        return path
+    
+    # 2. Try absolute Docker root (Works in Coolify/Standard Docker)
+    docker_path = "/app/assets"
+    if os.path.exists(os.path.join(docker_path, "promo.mp4")):
+        return docker_path
+    
+    # Fallback to local
+    return path
+
+ASSETS_DIR = get_assets_dir()
+OUTPUT_DIR = os.path.join(os.path.dirname(ASSETS_DIR), "output")
