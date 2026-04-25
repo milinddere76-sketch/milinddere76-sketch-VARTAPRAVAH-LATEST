@@ -5,9 +5,9 @@ import threading
 import os
 import redis
 import time
-from app.scheduler import scheduler
-from app import config
-from app.database import init_db, log_analytics
+from scheduler import scheduler
+import config
+from database import init_db, log_analytics
 
 app = FastAPI(title="VARTA PRAVAH ENTERPRISE DASHBOARD")
 
