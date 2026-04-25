@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 RUN pip install --upgrade pip setuptools wheel
+RUN pip install numpy==1.26.4
+RUN pip install pillow==10.2.0
 
 COPY requirements.txt .
 

@@ -29,6 +29,8 @@ WORKDIR /app/SadTalker
 
 # Install Python deps
 RUN pip3 install --upgrade pip setuptools wheel
+RUN pip3 install numpy==1.26.4
+RUN pip3 install pillow==10.2.0
 
 RUN pip3 install dlib-bin
 
