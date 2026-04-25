@@ -14,14 +14,6 @@ services:
       - postgres
       - redis
 
-  tts:
-    build: ./tts
-    container_name: vartapravah_tts
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    restart: always
-
   video_worker:
     build: ./video_worker
     container_name: vartapravah_video
