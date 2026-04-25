@@ -19,10 +19,10 @@ WORKDIR /app
 # Create necessary directories
 RUN mkdir -p /app/output /app/app/assets /app/checkpoints /app/Wav2Lip /app/SadTalker
 
-# Copy requirements
-COPY requirements.txt requirements-light.txt ./
+# Copy requirements only if they exist
+COPY requirements*.txt ./
 
-# Install pip tools first
+# Install pip tools
 RUN pip install --upgrade pip setuptools wheel
 
 # Install requirements
