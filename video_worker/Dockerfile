@@ -20,7 +20,7 @@ RUN pip install --upgrade pip setuptools wheel
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt || cat /root/.cache/pip/log/debug.log
+RUN pip install --no-cache-dir -r requirements.txt -vvv
 
 COPY render.py .
 

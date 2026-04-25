@@ -29,7 +29,7 @@ RUN pip3 install --upgrade pip setuptools wheel
 
 RUN pip3 install dlib-bin
 
-RUN pip3 install --no-cache-dir -r requirements.txt || cat /root/.cache/pip/log/debug.log
+RUN pip3 install --no-cache-dir -r requirements.txt -vvv
 
 # Download models (auto script)
 # Note: This requires internet access during build

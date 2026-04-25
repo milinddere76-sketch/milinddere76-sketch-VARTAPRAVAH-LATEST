@@ -25,7 +25,7 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --upgrade pip setuptools wheel
 
-RUN pip install --no-cache-dir -r requirements.txt || cat /root/.cache/pip/log/debug.log
+RUN pip install --no-cache-dir -r requirements.txt -vvv
 
 # Copy application code
 COPY . .

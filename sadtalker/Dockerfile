@@ -31,7 +31,7 @@ COPY requirements.txt .
 # Install Python dependencies from requirements file
 RUN pip install --upgrade pip setuptools wheel
 
-RUN pip install --no-cache-dir -r requirements.txt || cat /root/.cache/pip/log/debug.log
+RUN pip install --no-cache-dir -r requirements.txt -vvv
 
 # Make output directory
 RUN mkdir -p /app/output /app/checkpoints
