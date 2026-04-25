@@ -15,14 +15,23 @@ app = FastAPI(title="VARTA PRAVAH ENTERPRISE DASHBOARD")
 r = redis.Redis(host=config.REDIS_HOST, port=int(config.REDIS_PORT))
 
 # Serve static files and videos
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-if not os.path.exists("output"):
-    os.makedirs("output")
-app.mount("/videos", StaticFiles(directory="output"), name="videos")
+# Get absolute paths
+static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "output")
+
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+app.mount("/videos", StaticFiles(directory=output_dir), name="videos")
 
 @app.get("/")
 def read_dashboard():
-    return FileResponse("app/static/index.html")
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+    index_path = os.path.join(static_dir, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"message": "Dashboard available at /api/analytics"}
 
 @app.get("/health")
 def health_check():
@@ -60,13 +69,21 @@ def get_analytics():
 
 @app.get("/start")
 def start_stream():
-    os.system("docker start vartapravah_streamer")
-    return {"status": "started"}
+    try:
+        import subprocess
+        subprocess.run(["docker", "start", "vartapravah_streamer"], check=True, timeout=10)
+        return {"status": "started"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 @app.get("/stop")
 def stop_stream():
-    os.system("docker stop vartapravah_streamer")
-    return {"status": "stopped"}
+    try:
+        import subprocess
+        subprocess.run(["docker", "stop", "vartapravah_streamer"], check=True, timeout=10)
+        return {"status": "stopped"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 # --- SYSTEM LOGIC ---
 

@@ -22,11 +22,8 @@ COPY requirements.txt .
 # Install pip tools first
 RUN pip install --upgrade pip setuptools wheel
 
-# Install core dependencies
-RUN pip install numpy==1.22.0 Cython pyworld==0.3.4
-
-# Install audio/ML dependencies
-RUN pip install redis groq librosa
+# Install build dependencies for audio libraries
+RUN pip install Cython numpy==1.24.3
 
 # Install remaining requirements
 RUN pip install -r requirements.txt
@@ -39,4 +36,4 @@ COPY . .
 
 ENV PYTHONPATH=/app
 
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

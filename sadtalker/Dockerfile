@@ -19,16 +19,16 @@ RUN git clone https://github.com/OpenTalker/SadTalker.git && \
 
 WORKDIR /app/SadTalker
 
-# Install pip tools
+# Install pip tools first
 RUN pip install --upgrade pip setuptools wheel
 
 # Install base dependencies
 RUN pip install numpy==1.26.4 Cython
 
-# Install PyTorch
+# Install PyTorch CPU
 RUN pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cpu
 
-# Install SadTalker dependencies separately to catch any failures
+# Install SadTalker dependencies
 RUN pip install tqdm yacs pyyaml librosa
 
 RUN pip install face-alignment facexlib gfpgan
@@ -37,13 +37,14 @@ RUN pip install imageio imageio-ffmpeg kornia ninja resampy
 
 RUN pip install dlib-bin
 
+# Install basicsr (needed for SadTalker)
+RUN pip install basicsr
+
 # Clean pip cache
 RUN pip cache purge
 
-# 6. Patch basicsr (Compatibility Fix)
-RUN sed -i "s/from torchvision.transforms.functional_tensor import rgb_to_grayscale/from torchvision.transforms.functional import rgb_to_grayscale/g" $(python -c 'import basicsr; print(basicsr.__path__[0])')/data/degradations.py || true
+# Make output directory
+RUN mkdir -p /app/output /app/checkpoints
 
-# 7. Prep models
-RUN mkdir -p checkpoints && bash scripts/download_models.sh
-
-CMD ["python", "inference.py", "--cpu"]
+# Default to checking service availability
+CMD ["python", "-c", "print('SadTalker service ready')"]

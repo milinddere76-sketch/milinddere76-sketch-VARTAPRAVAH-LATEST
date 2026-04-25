@@ -2,7 +2,7 @@ import os
 import redis
 import time
 import subprocess
-from app import config
+import config
 
 class StreamEngine:
     def __init__(self):
