@@ -1,51 +1,44 @@
 FROM python:3.10-slim
 
-# Install system dependencies (CRITICAL)
+# 1. Install Native ARM64 System Libraries (Permanent Solve)
 RUN apt-get update && apt-get install -y \
-    git \
-    ffmpeg \
-    curl \
-    wget \
-    build-essential \
-    cmake \
-    libgl1 \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    python3-dev \
+    git ffmpeg curl wget build-essential cmake \
+    libopenblas-dev liblapack-dev \
+    libgl1 libglib2.0-0 libsm6 libxext6 libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Set workdir
 WORKDIR /app
 
-# Clone SadTalker
+# 2. Clone SadTalker
 RUN git clone https://github.com/OpenTalker/SadTalker.git
-
 WORKDIR /app/SadTalker
 
-# Upgrade pip tools
-RUN pip install --upgrade pip setuptools wheel
+# 3. Permanent Dependency Solve (Manual Curated List for ARM64)
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir \
+    numpy==1.24.3 \
+    opencv-python-headless \
+    pillow \
+    scipy \
+    tqdm \
+    yacs \
+    pyyaml \
+    dlib \
+    face-alignment \
+    facexlib \
+    gfpgan \
+    librosa \
+    imageio \
+    imageio-ffmpeg \
+    kornia \
+    ninja \
+    resampy
 
-# Install torch FIRST (CPU stable)
-RUN pip install --no-cache-dir \
-    torch==2.1.0 \
-    torchvision==0.16.0 \
-    torchaudio==2.1.0 \
-    --index-url https://download.pytorch.org/whl/cpu
+# 4. Clean up any conflicting requirements
+RUN rm requirements.txt && touch requirements.txt
 
-# 🔥 DIAGNOSTIC FIX: Clean requirements and install ONE BY ONE
-RUN sed -i '/torch/d' requirements.txt && \
-    sed -i '/torchvision/d' requirements.txt && \
-    sed -i '/torchaudio/d' requirements.txt
-
-# Pre-install stable ARM64 versions of problematic libs
-RUN pip install --no-cache-dir opencv-python-headless scipy numpy
-
-# Attempt one-by-one install to find the culprit
-RUN while read p; do pip install "$p" || exit 1; done < requirements.txt
-
-# Download pretrained models
+# 5. Prep models directory
 RUN mkdir -p checkpoints
 
 CMD ["python3", "inference.py"]
