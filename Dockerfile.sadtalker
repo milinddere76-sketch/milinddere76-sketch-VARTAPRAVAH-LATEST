@@ -2,10 +2,22 @@ FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
 
 WORKDIR /app
 
-# System deps
+# Install required system libraries
 RUN apt-get update && apt-get install -y \
-    git ffmpeg python3 python3-pip wget \
-    libgl1 cmake build-essential python3-dev && rm -rf /var/lib/apt/lists/*
+    build-essential \
+    gcc \
+    libpq-dev \
+    ffmpeg \
+    libgl1 \
+    libglib2.0-0 \
+    curl \
+    git \
+    python3 \
+    python3-pip \
+    wget \
+    cmake \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Clone SadTalker
 RUN git clone https://github.com/OpenTalker/SadTalker.git
@@ -14,8 +26,10 @@ WORKDIR /app/SadTalker
 
 # Install Python deps
 RUN pip3 install --upgrade pip setuptools wheel
+
 RUN pip3 install dlib-bin
-RUN pip3 install -r requirements.txt
+
+RUN pip3 install --no-cache-dir -r requirements.txt || cat /root/.cache/pip/log/debug.log
 
 # Download models (auto script)
 # Note: This requires internet access during build

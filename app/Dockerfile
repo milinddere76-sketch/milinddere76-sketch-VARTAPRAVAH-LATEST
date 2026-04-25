@@ -5,31 +5,27 @@ ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies in single layer
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install required system libraries
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    libpq-dev \
     ffmpeg \
+    libgl1 \
+    libglib2.0-0 \
     curl \
-    espeak-ng \
-    libsndfile1 \
-    fonts-noto \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/cache/*
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # Copy requirements
 COPY requirements.txt .
 
-# Install pip tools first
+# Install Python dependencies
 RUN pip install --upgrade pip setuptools wheel
 
-# Install build dependencies for audio libraries
-RUN pip install Cython numpy==1.24.3
-
-# Install remaining requirements
-RUN pip install -r requirements.txt
-
-# Clean pip cache
-RUN pip cache purge
+RUN pip install --no-cache-dir -r requirements.txt || cat /root/.cache/pip/log/debug.log
 
 # Copy application code
 COPY . .

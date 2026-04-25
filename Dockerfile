@@ -1,32 +1,32 @@
-FROM python:3.11-slim
+FROM python:3.10-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install required system libraries
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    libpq-dev \
     ffmpeg \
-    espeak-ng \
+    libgl1 \
+    libglib2.0-0 \
     curl \
-    fonts-noto \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # Create necessary directories
 RUN mkdir -p /app/output /app/app/assets /app/checkpoints /app/Wav2Lip /app/SadTalker
 
-# Copy requirements only if they exist
-COPY requirements*.txt ./
+# Copy requirements
+COPY requirements.txt ./
 
-# Install pip tools
+# Install Python dependencies
 RUN pip install --upgrade pip setuptools wheel
 
-# Install requirements
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt || cat /root/.cache/pip/log/debug.log
 
 # Copy application code
 COPY . .

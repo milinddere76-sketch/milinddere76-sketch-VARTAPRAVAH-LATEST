@@ -5,18 +5,27 @@ ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install only runtime dependencies - espeak is needed for TTS
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    espeak-ng \
+# Install required system libraries
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    libpq-dev \
     ffmpeg \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    libgl1 \
+    libglib2.0-0 \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install TTS and dependencies
-RUN pip install --upgrade pip setuptools wheel && \
-    pip install TTS && \
-    pip cache purge
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --upgrade pip setuptools wheel
+
+RUN pip install --no-cache-dir -r requirements.txt || cat /root/.cache/pip/log/debug.log
 
 COPY tts.py .
 

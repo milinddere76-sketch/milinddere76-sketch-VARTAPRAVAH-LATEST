@@ -1,20 +1,27 @@
-FROM ubuntu:22.04
+FROM python:3.10-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install required system libraries
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    libpq-dev \
     ffmpeg \
-    python3 \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    libgl1 \
+    libglib2.0-0 \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-RUN pip3 install --no-cache-dir --disable-pip-version-check \
-    requests \
-    pydantic \
-    moviepy
+RUN pip install --upgrade pip setuptools wheel
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt || cat /root/.cache/pip/log/debug.log
 
 COPY render.py .
 
-CMD ["python3", "render.py"]
+CMD ["python", "render.py"]
