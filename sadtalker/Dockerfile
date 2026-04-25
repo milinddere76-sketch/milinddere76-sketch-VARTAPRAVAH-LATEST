@@ -15,16 +15,14 @@ WORKDIR /app
 RUN git clone https://github.com/OpenTalker/SadTalker.git
 WORKDIR /app/SadTalker
 
-# 3. Install Python Deps (CPU Optimized + Fast dlib)
-RUN pip3 install --upgrade pip setuptools wheel && \
-    pip3 install --no-cache-dir torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cpu && \
-    pip3 install --no-cache-dir \
+# 3. Install Python Deps (Hardened & CPU Optimized)
+RUN pip3 install --upgrade pip setuptools wheel
+RUN pip3 install "numpy==1.26.4" Cython
+RUN pip3 install --no-cache-dir torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cpu
+RUN pip3 install --no-cache-dir \
     tqdm yacs pyyaml face-alignment facexlib gfpgan \
     librosa imageio imageio-ffmpeg kornia ninja resampy \
     dlib-bin
-
-# 4. Fix NumPy 2.x compatibility (Downgrade to 1.x)
-RUN pip3 install "numpy<2.0"
 
 # 4. Patch basicsr (Fix for torchvision 0.15+ compatibility)
 RUN sed -i "s/from torchvision.transforms.functional_tensor import rgb_to_grayscale/from torchvision.transforms.functional import rgb_to_grayscale/g" /usr/local/lib/python3.10/dist-packages/basicsr/data/degradations.py
