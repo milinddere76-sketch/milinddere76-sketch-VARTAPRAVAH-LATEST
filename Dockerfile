@@ -1,38 +1,33 @@
 FROM python:3.11-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# Combine all apt-get operations in single RUN to reduce layers
+# Remove unnecessary -dev packages and build tools not needed at runtime
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     espeak-ng \
     curl \
-    fontconfig \
-    fonts-noto-hinted \
-    fonts-noto-extra \
-    libfreetype6-dev \
-    gcc \
-    python3-dev \
-    git \
+    fonts-noto \
     libsm6 \
     libxext6 \
     libxrender-dev \
-    cmake \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /app
 
 # Create necessary directories
-RUN mkdir -p /app/output /app/app/assets /app/checkpoints /app/Wav2Lip /app/SadTalker
+RUN mkdir -p /app/output /app/app/assets /app/checkpoints /app/Wav2Lip /app/SadTalker && \
+    find /app -type d -exec chmod 755 {} \;
 
-# Allow switching between standard and lightweight requirements
-ARG REQS_FILE=requirements.txt
+# Copy requirements early
 COPY requirements.txt requirements-light.txt ./
-RUN pip install --no-cache-dir -r ${REQS_FILE}
 
-# Wav2Lip is handled by dedicated workers
+# Install Python dependencies efficiently
+RUN pip install --no-cache-dir --disable-pip-version-check -r requirements.txt && \
+    pip cache purge
 
-# SadTalker is handled by Dockerfile.sadtalker
-
-WORKDIR /app
 COPY . .
 
 ENV PYTHONPATH=/app:/app/Wav2Lip:/app/SadTalker

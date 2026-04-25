@@ -1,27 +1,22 @@
-FROM ubuntu:22.04
+FROM python:3.10-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies including LLVM for numba/llvmlite
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    gcc \
-    g++ \
+# Install only runtime dependencies - espeak is needed for TTS
+RUN apt-get update && apt-get install -y --no-install-recommends \
     espeak-ng \
     ffmpeg \
-    python3-dev \
-    llvm \
-    llvm-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /app
 
-# Upgrade pip and install build tools
-RUN pip3 install --upgrade pip setuptools wheel
-
-# Install TTS (this will take time on ARM64 as it compiles dependencies)
-RUN pip3 install --no-cache-dir TTS
+# Install TTS and dependencies
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install TTS && \
+    pip cache purge
 
 COPY tts.py .
 
