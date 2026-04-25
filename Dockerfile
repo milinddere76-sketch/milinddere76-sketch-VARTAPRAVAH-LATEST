@@ -25,7 +25,7 @@ RUN mkdir -p /app/output /app/app/assets /app/checkpoints /app/Wav2Lip /app/SadT
 
 # Allow switching between standard and lightweight requirements
 ARG REQS_FILE=requirements.txt
-COPY requirements.txt requirements-light.txt .
+COPY requirements.txt requirements-light.txt ./
 RUN pip install --no-cache-dir -r ${REQS_FILE}
 
 # Wav2Lip is handled by dedicated workers

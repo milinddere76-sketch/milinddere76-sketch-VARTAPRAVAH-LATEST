@@ -5,7 +5,7 @@ import threading
 import os
 import redis
 import time
-from scheduler import scheduler
+from scheduler.scheduler import main as scheduler_main
 import config
 from database import init_db, log_analytics
 
@@ -23,6 +23,11 @@ app.mount("/videos", StaticFiles(directory="output"), name="videos")
 @app.get("/")
 def read_dashboard():
     return FileResponse("app/static/index.html")
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for monitoring."""
+    return {"status": "healthy"}
 
 # --- ANALYTICS API ---
 
@@ -66,7 +71,7 @@ def stop_stream():
 # --- SYSTEM LOGIC ---
 
 def run_scheduler():
-    scheduler.main()
+    scheduler_main()
 
 @app.on_event("startup")
 async def startup_event():

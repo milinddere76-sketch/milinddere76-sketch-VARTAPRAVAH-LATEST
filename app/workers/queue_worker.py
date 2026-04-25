@@ -2,11 +2,12 @@ import redis
 import json
 import time
 import os
+import config
 from services.tts_engine import init_tts, generate_audio
 from services.sadtalker_engine import generate_ai_video
 
 # Worker Initialization
-r = redis.Redis(host="redis", port=6379)
+r = redis.Redis(host=config.REDIS_HOST, port=int(config.REDIS_PORT))
 init_tts()
 
 # --- AUTO ANCHOR LOGIC ---
