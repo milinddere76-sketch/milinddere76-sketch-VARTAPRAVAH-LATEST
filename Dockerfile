@@ -7,7 +7,10 @@ ENV PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
+    g++ \
     libpq-dev \
+    libjpeg-dev \
+    zlib1g-dev \
     ffmpeg \
     libgl1 \
     libglib2.0-0 \
