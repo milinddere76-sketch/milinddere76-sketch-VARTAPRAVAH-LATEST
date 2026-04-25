@@ -33,8 +33,13 @@ RUN pip install --no-cache-dir \
     torchaudio==2.1.0 \
     --index-url https://download.pytorch.org/whl/cpu
 
-# 🔥 IMPORTANT FIX: install requirements WITHOUT conflicting packages
-RUN sed -i '/torch/d' requirements.txt
+# 🔥 ULTIMATE FIX: remove ALL torch-related packages from requirements.txt
+RUN sed -i '/torch/d' requirements.txt && \
+    sed -i '/torchvision/d' requirements.txt && \
+    sed -i '/torchaudio/d' requirements.txt
+
+# Install opencv-headless (Stable on ARM64)
+RUN pip install --no-cache-dir opencv-python-headless
 
 # Install remaining dependencies
 RUN pip install --no-cache-dir -r requirements.txt
