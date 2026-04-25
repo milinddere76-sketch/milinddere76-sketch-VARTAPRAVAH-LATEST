@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     libsm6 \
     libxext6 \
     libxrender-dev \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set workdir
@@ -33,18 +34,18 @@ RUN pip install --no-cache-dir \
     torchaudio==2.1.0 \
     --index-url https://download.pytorch.org/whl/cpu
 
-# 🔥 ULTIMATE FIX: remove ALL torch-related packages from requirements.txt
+# 🔥 DIAGNOSTIC FIX: Clean requirements and install ONE BY ONE
 RUN sed -i '/torch/d' requirements.txt && \
     sed -i '/torchvision/d' requirements.txt && \
     sed -i '/torchaudio/d' requirements.txt
 
-# Install opencv-headless (Stable on ARM64)
-RUN pip install --no-cache-dir opencv-python-headless
+# Pre-install stable ARM64 versions of problematic libs
+RUN pip install --no-cache-dir opencv-python-headless scipy numpy
 
-# Install remaining dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Attempt one-by-one install to find the culprit
+RUN while read p; do pip install "$p" || exit 1; done < requirements.txt
 
-# Download pretrained models (REQUIRED)
+# Download pretrained models
 RUN mkdir -p checkpoints
 
 CMD ["python3", "inference.py"]
