@@ -22,19 +22,18 @@ MAX_WORKERS = 1 # VERY IMPORTANT: SadTalker is VRAM intensive. Limit to 1 job.
 
 # --- PATHS ---
 def get_assets_dir():
-    # 1. Try relative to this config file (Works locally and in some Docker setups)
+    # 1. Try absolute path (Standard Docker)
+    if os.path.exists("/app/assets/promo.mp4"):
+        return "/app/assets"
+    
+    # 2. Try nested path (Coolify specific)
+    if os.path.exists("/app/app/assets/promo.mp4"):
+        return "/app/app/assets"
+    
+    # 3. Local fallback
     base = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(base, "assets")
-    if os.path.exists(os.path.join(path, "promo.mp4")):
-        return path
-    
-    # 2. Try absolute Docker root (Works in Coolify/Standard Docker)
-    docker_path = "/app/assets"
-    if os.path.exists(os.path.join(docker_path, "promo.mp4")):
-        return docker_path
-    
-    # Fallback to local
-    return path
+    return os.path.join(base, "assets")
 
 ASSETS_DIR = get_assets_dir()
-OUTPUT_DIR = os.path.join(os.path.dirname(ASSETS_DIR), "output")
+print(f"📂 [CONFIG] Assets directory resolved to: {ASSETS_DIR}")
+OUTPUT_DIR = "/app/output" if os.path.exists("/app") else os.path.join(os.path.dirname(ASSETS_DIR), "output")
