@@ -3,8 +3,7 @@ FROM python:3.11-slim
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
-# Combine all apt-get operations in single RUN to reduce layers
-# Remove unnecessary -dev packages and build tools not needed at runtime
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     espeak-ng \
@@ -18,16 +17,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Create necessary directories
-RUN mkdir -p /app/output /app/app/assets /app/checkpoints /app/Wav2Lip /app/SadTalker && \
-    find /app -type d -exec chmod 755 {} \;
+RUN mkdir -p /app/output /app/app/assets /app/checkpoints /app/Wav2Lip /app/SadTalker
 
-# Copy requirements early
+# Copy requirements
 COPY requirements.txt requirements-light.txt ./
 
-# Install Python dependencies efficiently
-RUN pip install --no-cache-dir --disable-pip-version-check -r requirements.txt && \
-    pip cache purge
+# Install pip tools first
+RUN pip install --upgrade pip setuptools wheel
 
+# Install requirements
+RUN pip install -r requirements.txt
+
+# Copy application code
 COPY . .
 
 ENV PYTHONPATH=/app:/app/Wav2Lip:/app/SadTalker
