@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-python-dotenv
-groq
-redis
-requests
-pydantic
-psycopg2-binary
-ffmpeg-python
