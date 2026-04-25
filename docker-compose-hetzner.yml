@@ -4,6 +4,8 @@ services:
     build: ./app
     container_name: vartapravah_app
     restart: always
+    # Explicitly set the command here to avoid any path confusion
+    command: python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
     dns:
       - 8.8.8.8
       - 8.8.4.4
