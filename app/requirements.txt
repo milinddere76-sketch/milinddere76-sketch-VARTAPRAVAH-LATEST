@@ -10,3 +10,4 @@ numpy==1.26.4
 gtts==2.5.1
 groq==0.7.0
 temporalio==1.4.0
+redis==5.0.1
