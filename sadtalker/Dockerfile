@@ -39,7 +39,6 @@ RUN pip install pillow==10.2.0
 
 # Install heavy AI packages manually (CPU versions for build stability)
 RUN pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cpu
-RUN pip install dlib-bin==19.24.2
 
 RUN pip install --no-cache-dir -r requirements.txt -vvv
 
