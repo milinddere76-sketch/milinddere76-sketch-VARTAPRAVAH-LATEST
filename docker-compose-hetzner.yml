@@ -3,7 +3,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: app/Dockerfile
+      dockerfile: Dockerfile.app
     container_name: vartapravah_app
     restart: always
     command: python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
@@ -20,7 +20,7 @@ services:
   worker:
     build:
       context: .
-      dockerfile: app/Dockerfile
+      dockerfile: Dockerfile.app
     container_name: vartapravah_worker
     restart: always
     command: python3 workers/sadtalker_worker.py
@@ -33,7 +33,9 @@ services:
       - sadtalker
 
   video_worker:
-    build: ./video_worker
+    build:
+      context: .
+      dockerfile: Dockerfile.video_worker
     container_name: vartapravah_video
     dns:
       - 8.8.8.8
@@ -43,7 +45,9 @@ services:
       - ./output:/app/output
 
   tts:
-    build: ./tts
+    build:
+      context: .
+      dockerfile: Dockerfile.tts
     container_name: vartapravah_tts
     restart: always
     env_file: .env
@@ -51,7 +55,9 @@ services:
       - ./output:/app/output
 
   sadtalker:
-    build: ./sadtalker
+    build:
+      context: .
+      dockerfile: Dockerfile.sadtalker
     container_name: vartapravah_sadtalker
     dns:
       - 8.8.8.8

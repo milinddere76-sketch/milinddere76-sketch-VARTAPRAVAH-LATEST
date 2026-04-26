@@ -1,47 +1,51 @@
 import os
 import config
 
-def create_video(audio_path, output_path, script_text=""):
+def create_video(sadtalker_video_path, output_path, script_text=""):
     """
-    Generates a video by overlaying audio on a static studio image,
-    including a professional scrolling news ticker.
+    Generates a professional branded news video.
+    Overlays: News Ticker, LIVE Badge, and Channel Logo.
     """
-    studio_img = os.path.join(config.ASSETS_DIR, "studio.jpg")
+    logo_path = os.path.join(config.ASSETS_DIR, "varta_logo.png")
     font_path = "/usr/share/fonts/truetype/noto/NotoSansMarathi-Regular.ttf"
     
     if not os.path.exists(font_path):
         font_path = "DejaVu Sans"
 
-    # Clean text for FFmpeg (remove newlines and quotes)
+    # Clean text for FFmpeg
     ticker_text = script_text.replace("\n", " | ").replace("'", "").replace("\"", "")
     if not ticker_text:
-        ticker_text = "वार्ता प्रवाह - ताज्या घडामोडी"
+        ticker_text = "वार्ता प्रवाह - २४/७ बातम्या"
 
-    # User's requested scrolling ticker filter
-    # x=w-mod(t*200\,w+tw) provides the scrolling effect
-    video_filter = (
-        f"drawtext=fontfile='{font_path}':"
-        f"text='{ticker_text}':"
-        "x=w-mod(t*200,w+tw):"
-        "y=h-50:"
-        "fontsize=30:"
-        "fontcolor=white:"
-        "box=1:boxcolor=black@0.6" # Added box for better readability
+    # FFmpeg Filter Complex for Professional Look:
+    # 1. Scale input video to 1280x720
+    # 2. Overlay Logo at Top-Right
+    # 3. Add "LIVE" red badge at Top-Left
+    # 4. Add Scrolling Ticker at Bottom
+    
+    filters = (
+        "[0:v]scale=1280:720[bg];"
+        f"[1:v]scale=150:-1[logo];"
+        "[bg][logo]overlay=W-170:20[v1];"
+        "drawtext=text='● LIVE':fontcolor=white:fontsize=24:x=30:y=30:box=1:boxcolor=red@0.8:boxborderw=10[v2];"
+        f"[v1][v2]overlay[v3];"
+        f"[v3]drawtext=fontfile='{font_path}':text='{ticker_text}':x=w-mod(t*200,w+tw):y=h-60:fontsize=35:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=15"
     )
 
     cmd = f"""
-    ffmpeg -y -loop 1 -i {studio_img} \
-    -i {audio_path} \
-    -vf "{video_filter}" \
-    -c:v libx264 -tune stillimage -c:a aac -b:a 192k \
-    -shortest -pix_fmt yuv420p {output_path}
+    ffmpeg -y -i {sadtalker_video_path} \
+    -i {logo_path} \
+    -filter_complex "{filters}" \
+    -c:v libx264 -preset fast -pix_fmt yuv420p \
+    -c:a aac -b:a 192k \
+    {output_path}
     """
     
-    print(f"🎬 [VIDEO] Creating video with Ticker: {output_path}...")
+    print(f"🎬 [VIDEO-ENGINE] Branded Composition: {output_path}...")
     os.system(cmd)
     return output_path
 
 class VideoEngine:
-    def generate_video(self, audio_path, script_text, output_filename):
+    def generate_video(self, video_path, script_text, output_filename):
         output_path = os.path.join(config.OUTPUT_DIR, output_filename)
-        return create_video(audio_path, output_path, script_text)
+        return create_video(video_path, output_path, script_text)
