@@ -35,6 +35,6 @@ RUN pip install --no-cache-dir -r requirements.txt -vvv
 # Copy application code
 COPY . .
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app:/app/app
 
 CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
