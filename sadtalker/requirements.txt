@@ -16,3 +16,4 @@ basicsr==1.4.2
 safetensors==0.4.1
 scipy==1.11.4
 setuptools
+opencv-python-headless
