@@ -5,7 +5,6 @@ import os
 import subprocess
 import config
 from services.tts_engine import init_tts, generate_audio
-from services.sadtalker_engine import generate_ai_video
 from services.video_engine import VideoEngine
 
 # Dedicated SadTalker Worker Configuration
@@ -102,23 +101,16 @@ while True:
             print("❌ [SADTALKER-WORKER] TTS Failed")
             continue
 
-        # 2. SadTalker AI Face Generation
+        # 2. LEAN SYNTHESIS: Generate a video loop from anchor image + audio
         face_image = os.path.join(config.ASSETS_DIR, f"anchor_{anchor_type}.jpg")
-        result_dir = os.path.join(config.OUTPUT_DIR, f"sadtalker_{task_id}")
-        os.makedirs(result_dir, exist_ok=True)
-
-        print(f"🎭 [SADTALKER-WORKER] Synthesizing Expressive Face...")
-        generate_ai_video(face_image, audio_file)
-
-        # 3. Find the rendered .mp4
-        sadtalker_video = None
-        for root, dirs, files in os.walk(result_dir):
-            for file in files:
-                if file.endswith(".mp4"):
-                    sadtalker_video = os.path.join(root, file)
-                    break
+        sadtalker_video = os.path.join(config.OUTPUT_DIR, f"lean_bulletin_{task_id}.mp4")
         
-        if sadtalker_video:
+        print(f"⚡ [LEAN-MODE] Generating high-speed loop for {anchor_type}...")
+        # This creates a video from the image, synced to the audio length
+        lean_cmd = f"ffmpeg -y -loop 1 -i {face_image} -i {audio_file} -c:v libx264 -tune stillimage -c:a aac -b:a 128k -shortest -pix_fmt yuv420p {sadtalker_video}"
+        os.system(lean_cmd)
+        
+        if os.path.exists(sadtalker_video):
             # 4. Final Video Composition (Ticker + Overlays)
             final_video = f"final_bulletin_{task_id}.mp4"
             final_path = video_engine.generate_video(sadtalker_video, script, final_video)

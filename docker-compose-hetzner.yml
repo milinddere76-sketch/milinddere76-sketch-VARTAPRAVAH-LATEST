@@ -31,7 +31,6 @@ services:
       - ./ssh-key-2026-04-23.key:/app/oracle_key.key:ro
     depends_on:
       - redis
-      - sadtalker
 
   video_worker:
     build:
@@ -52,18 +51,6 @@ services:
     container_name: vartapravah_tts
     restart: always
     env_file: .env
-    volumes:
-      - ./output:/app/output
-
-  sadtalker:
-    build:
-      context: .
-      dockerfile: Dockerfile.sadtalker
-    container_name: vartapravah_sadtalker
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    restart: always
     volumes:
       - ./output:/app/output
 
