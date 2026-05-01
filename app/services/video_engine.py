@@ -13,8 +13,8 @@ def create_video(sadtalker_video_path, output_path, script_text=""):
     if not os.path.exists(font_path):
         font_path = "DejaVu Sans"
 
-    # Clean text for FFmpeg
-    ticker_text = script_text.replace("\n", " | ").replace("'", "").replace("\"", "")
+    # Clean text for FFmpeg (The Syntax Shield)
+    ticker_text = script_text.replace("\n", " | ").replace("'", "").replace("\"", "").replace(":", "\\:").replace("%", "\\%")
     if not ticker_text:
         ticker_text = "वार्ता प्रवाह - २४/७ बातम्या"
 
