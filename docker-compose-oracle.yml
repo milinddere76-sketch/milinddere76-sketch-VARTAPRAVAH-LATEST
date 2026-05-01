@@ -8,7 +8,7 @@ services:
     restart: always
     env_file: .env
     ports:
-      - "1935:1935"
+      - "1937:1935"
       - "8085:8080"
     volumes:
       - ./output:/home/ubuntu/videos
