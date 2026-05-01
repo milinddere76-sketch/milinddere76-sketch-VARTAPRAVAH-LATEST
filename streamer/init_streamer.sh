@@ -4,21 +4,16 @@
 echo "🚀 [INIT] Starting Varta Pravah Playout Node..."
 
 # 1. Setup Environment
-# FORCE REAL KEY: Stop the ghost-streaming placeholder
-STREAM_KEY="${YOUTUBE_STREAM_KEY}"
+# SMARTER FUSION: Ensure the Stream Key is present exactly ONCE
+# Restoring the qcu7 key as the definitive default for immediate launch
+STREAM_KEY=${YOUTUBE_STREAM_KEY:-"qcu7-xesd-m4sv-9zvv-e335"}
 BASE_URL=${YOUTUBE_RTMP_URL:-"rtmp://a.rtmp.youtube.com/live2/"}
-
-if [ -z "$STREAM_KEY" ]; then
-    echo "❌ [CRITICAL ERROR] YOUTUBE_STREAM_KEY IS MISSING!"
-    echo "⚠️  Action Required: Add YOUTUBE_STREAM_KEY to your Coolify Environment Variables."
-    exit 1
-fi
 
 if [[ "$BASE_URL" == *"$STREAM_KEY"* ]]; then
     echo "✅ [INIT] Stream Key already present in URL."
     FINAL_RTMP_URL="$BASE_URL"
 else
-    echo "🔧 [INIT] Fusing Real Stream Key to Base URL..."
+    echo "🔧 [INIT] Appending Stream Key to Base URL..."
     [[ "$BASE_URL" != */ ]] && BASE_URL="$BASE_URL/"
     FINAL_RTMP_URL="${BASE_URL}${STREAM_KEY}"
 fi
