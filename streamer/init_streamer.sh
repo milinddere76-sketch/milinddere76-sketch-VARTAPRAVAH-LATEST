@@ -5,8 +5,16 @@ echo "🚀 [INIT] Starting Varta Pravah Playout Node..."
 
 # 1. Setup Environment
 export YOUTUBE_RTMP_URL=${YOUTUBE_RTMP_URL:-rtmp://a.rtmp.youtube.com/live2/qcu7-xesd-m4sv-9zvv-e335}
-mkdir -p /home/ubuntu/queue /home/ubuntu/logs /home/ubuntu/videos/breaking
+mkdir -p /home/ubuntu/queue /home/ubuntu/logs /home/ubuntu/videos/breaking /app/assets
 chmod -R 777 /app/assets /home/ubuntu/queue /home/ubuntu/logs /home/ubuntu/videos
+
+# 1b. AUTO-RESTORE: If images are missing from the volume mount, restore from internal backup
+if [ -d "/app/backup_assets" ] && [ $(ls /app/assets/promo_*.png 2>/dev/null | wc -l) -eq 0 ]; then
+    echo "📦 [INIT] Restoring branding assets from internal backup..."
+    cp /app/backup_assets/*.png /app/assets/ 2>/dev/null || true
+    cp /app/backup_assets/*.mp4 /app/assets/ 2>/dev/null || true
+    chmod -R 777 /app/assets
+fi
 
 # 2. Configure Nginx (Inject Environment Variables)
 envsubst '$YOUTUBE_RTMP_URL' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf

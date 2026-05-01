@@ -26,7 +26,10 @@ RUN chmod +x /app/*.sh
 # Copy ALL assets explicitly (including slides and logos)
 COPY streamer/assets/*.png /app/assets/
 COPY streamer/assets/*.mp4 /app/assets/
-RUN chmod -R 777 /app/assets
+# Create a backup that cannot be overwritten by volumes
+COPY streamer/assets/*.png /app/backup_assets/
+COPY streamer/assets/*.mp4 /app/backup_assets/
+RUN chmod -R 777 /app/assets /app/backup_assets
 
 # Start everything via the master init script
 CMD ["/app/init_streamer.sh"]
