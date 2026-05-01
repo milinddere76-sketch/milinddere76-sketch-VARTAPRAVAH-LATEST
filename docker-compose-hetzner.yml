@@ -39,10 +39,11 @@ services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
     container_name: vp_frontend
     restart: always
     ports:
-      - "3000:3000"
+      - "3000:80"
 
   # --- MINIMAL INFRASTRUCTURE ---
   postgres:
