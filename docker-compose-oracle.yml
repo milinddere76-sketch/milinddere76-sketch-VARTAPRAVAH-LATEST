@@ -9,7 +9,7 @@ services:
     env_file: .env
     ports:
       - "1935:1935"
-      - "8080:8080"
+      - "8085:8080"
     volumes:
       - ./output:/home/ubuntu/videos
       - ./queue:/home/ubuntu/queue
