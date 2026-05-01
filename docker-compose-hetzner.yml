@@ -13,6 +13,10 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    volumes:
+      - ./app/assets:/app/assets
+      - ./output:/app/output
+      - /home/ubuntu/queue:/home/ubuntu/queue
     depends_on:
       - postgres
       - redis
