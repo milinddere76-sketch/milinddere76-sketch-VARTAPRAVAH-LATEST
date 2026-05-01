@@ -65,6 +65,34 @@ def get_analytics():
     except Exception as e:
         return {"status": "OFFLINE", "error": str(e)}
 
+@app.get("/api/latest-video")
+def get_latest_video():
+    """Returns the filename of the most recent video in the output directory."""
+    try:
+        files = [f for f in os.listdir(output_dir) if f.endswith(".mp4")]
+        if not files:
+            return {"status": "empty", "message": "No videos generated yet"}
+        
+        # Sort by modification time
+        files.sort(key=lambda x: os.path.getmtime(os.path.join(output_dir, x)), reverse=True)
+        return {"status": "success", "video_url": f"/videos/{files[0]}", "filename": files[0]}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/news/latest")
+def get_latest_news():
+    """Returns the last few articles fetched by the system."""
+    try:
+        # We fetch the last item from the redis queue or just return status
+        # For simplicity, we'll return a placeholder or the last task
+        last_task = r.lindex(config.QUEUE_NAME, -1)
+        if last_task:
+            task_data = json.loads(last_task)
+            return {"status": "success", "news": task_data.get("script", "No news data available.")[:500]}
+        return {"status": "idle", "message": "Waiting for next news cycle..."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 # --- CONTROL ENDPOINTS ---
 
 @app.get("/start")
