@@ -1,5 +1,5 @@
 import requests
-import config
+from app import config
 
 class NewsFetcher:
     def __init__(self):

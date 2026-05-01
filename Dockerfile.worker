@@ -17,13 +17,15 @@ WORKDIR /app
 # Copy the entire project
 COPY . .
 
-# Install dependencies (Filter for lean mode)
+# Install dependencies (Lean Mode)
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
-RUN pip install --no-cache-dir -r app/requirements.txt
-RUN pip install --no-cache-dir redis requests gtts
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Ensure directories exist
 RUN mkdir -p /app/output /app/assets
 
-# Start the lean news worker
-CMD ["python3", "app/workers/sadtalker_worker.py"]
+# Environment variables for modular execution
+ENV PYTHONPATH=/app
+
+# Start the lean news worker as a module
+CMD ["python3", "-m", "app.workers.sadtalker_worker"]

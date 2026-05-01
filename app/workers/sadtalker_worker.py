@@ -3,9 +3,9 @@ import json
 import time
 import os
 import subprocess
-import config
-from services.tts_engine import init_tts, generate_audio
-from services.video_engine import VideoEngine
+from app import config
+from app.services.tts_engine import init_tts, generate_audio
+from app.services.video_engine import VideoEngine
 
 # Dedicated SadTalker Worker Configuration
 r = redis.Redis(host=config.REDIS_HOST, port=int(config.REDIS_PORT))

@@ -1,7 +1,7 @@
 import os
 import psycopg2
 from datetime import datetime
-import config
+from app import config
 
 def get_db_connection():
     """Returns a connection to the PostgreSQL database."""

@@ -3,3 +3,6 @@ uvicorn
 requests
 gtts
 pillow
+redis
+psycopg2-binary
+sqlalchemy
