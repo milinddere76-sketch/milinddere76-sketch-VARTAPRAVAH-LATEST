@@ -5,48 +5,50 @@ ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DEFAULT_TIMEOUT=1000
 
-# Install required system libraries
-RUN apt-get update && apt-get install -y \
+# 1. Install critical system libraries
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
     g++ \
-    libpq-dev \
-    libjpeg-dev \
-    zlib1g-dev \
+    cmake \
     ffmpeg \
-    libgl1 \
+    libgl1-mesa-glx \
     libglib2.0-0 \
-    curl \
     git \
     wget \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Clone SadTalker with compression
+# 2. Clone SadTalker
 RUN git clone https://github.com/OpenTalker/SadTalker.git && \
     cd SadTalker && \
     git config core.compression 9
 
 WORKDIR /app/SadTalker
 
-# Copy requirements
-COPY sadtalker/requirements.txt .
+# 3. Step-by-Step Stable Python Installation
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# Install Python dependencies
-RUN pip install --upgrade pip setuptools wheel
-RUN pip install numpy==1.26.4
-RUN pip install pillow==10.2.0
+# Install build-time dependencies first
+RUN pip install --no-cache-dir numpy==1.26.4 Cython==3.0.5
 
-# Install heavy AI packages manually (CPU versions for build stability)
-# Using CPU wheels to avoid huge image size and build timeouts
-RUN pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cpu
+# Install CPU-specific Torch to save 2GB+ of space and prevent RAM crashes
+RUN pip install --no-cache-dir torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cpu
 
-RUN pip install --no-cache-dir -r requirements.txt -vvv
+# 4. Handle "Basicsr" and AI dependencies manually (The most common fail points)
+RUN pip install --no-cache-dir facexlib==0.3.0 gfpgan==1.3.8
+RUN pip install --no-cache-dir basicsr==1.4.2
 
-# Make output directory
-RUN mkdir -p /app/output /app/checkpoints
+# 5. Install remaining requirements
+COPY sadtalker/requirements.txt /tmp/requirements.txt
+# Filter out already installed heavy packages to avoid re-installation
+RUN grep -vE "numpy|torch|torchvision|torchaudio|basicsr|facexlib|gfpgan" /tmp/requirements.txt > /app/SadTalker/requirements_filtered.txt
+RUN pip install --no-cache-dir -r requirements_filtered.txt
 
-# Default command - Download models ONCE at runtime, then stay ready
-# This makes the Docker build fast (minutes) instead of hours.
-CMD ["/bin/bash", "-c", "if [ ! -d '/app/SadTalker/checkpoints' ]; then bash scripts/download_models.sh; fi; python3 inference.py"]
+# 6. Final Setup
+RUN mkdir -p /app/output /app/SadTalker/checkpoints
+
+# Download models logic (Same as before, runs once at first startup)
+CMD ["/bin/bash", "-c", "if [ ! -d '/app/SadTalker/checkpoints' ] || [ -z \"$(ls -A /app/SadTalker/checkpoints)\" ]; then bash scripts/download_models.sh; fi; python3 inference.py"]
