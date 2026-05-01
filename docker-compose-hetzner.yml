@@ -26,7 +26,9 @@ services:
     env_file:
       - .env
     volumes:
+      - ./app/assets:/app/assets
       - ./output:/app/output
+      - /home/ubuntu/queue:/app/queue
       - ./ssh-key-2026-04-23.key:/app/oracle_key.key:ro
     depends_on:
       - app

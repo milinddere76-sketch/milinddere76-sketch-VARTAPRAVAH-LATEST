@@ -21,8 +21,8 @@ COPY . .
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Ensure directories exist and link assets for path compatibility
-RUN mkdir -p /app/output && ln -s /app/app/assets /app/assets
+# Ensure production directories exist
+RUN mkdir -p /app/assets /app/output /app/queue
 
 # Environment variables for modular execution
 ENV PYTHONPATH=/app
