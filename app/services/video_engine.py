@@ -25,8 +25,8 @@ def create_video(sadtalker_video_path, output_path, script_text=""):
     
     filters = (
         "[0:v]scale=1280:720[bg];"
-        f"[1:v]scale=150:-1[logo];"
-        "[bg][logo]overlay=W-170:20[v1];"
+        f"[1:v]scale=180:-1[logo];"
+        "[bg][logo]overlay=W-w-20:20[v1];"
         "drawtext=text='● LIVE':fontcolor=white:fontsize=24:x=30:y=30:box=1:boxcolor=red@0.8:boxborderw=10[v2];"
         f"[v1][v2]overlay[v3];"
         f"[v3]drawtext=fontfile='{font_path}':text='{ticker_text}':x=w-mod(t*200,w+tw):y=h-60:fontsize=35:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=15"
