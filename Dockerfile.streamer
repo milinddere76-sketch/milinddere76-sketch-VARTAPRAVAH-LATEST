@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     liquidsoap \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Create HLS directory
-RUN mkdir -p /var/www/hls && chmod -R 777 /var/www/hls
+# Create HLS and PID directories
+RUN mkdir -p /var/www/hls /run && chmod -R 777 /var/www/hls /run
 
 WORKDIR /app
 
@@ -26,7 +26,8 @@ RUN chmod +x /app/stream.sh
 # Copy LOCAL assets
 COPY streamer/assets /app/assets
 
-# Use envsubst to inject YOUTUBE_RTMP_URL into nginx.conf, start nginx, then run liquidsoap
+# Use envsubst to inject YOUTUBE_RTMP_URL into nginx.conf, test config, then start
 CMD envsubst '$YOUTUBE_RTMP_URL' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
-    service nginx start && \
+    nginx -t && \
+    nginx && \
     liquidsoap /app/playout.liq
