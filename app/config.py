@@ -35,13 +35,13 @@ MAX_WORKERS = 1  # SadTalker is VRAM intensive
 # --- PATHS ---
 def get_assets_dir():
     """Get assets directory with proper fallbacks."""
-    # 1. Try absolute path (Standard Docker)
-    path1 = "/app/assets"
+    # 1. Try nested path (Standard Production)
+    path1 = "/app/app/assets"
     if os.path.exists(path1):
         return path1
     
-    # 2. Try nested path (Coolify)
-    path2 = "/app/app/assets"
+    # 2. Try absolute path
+    path2 = "/app/assets"
     if os.path.exists(path2):
         return path2
     
