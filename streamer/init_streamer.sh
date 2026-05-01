@@ -41,7 +41,7 @@ if [ ! -f "/app/assets/premium_promo.mp4" ] && [ ! -f "/app/assets/promo.mp4" ];
         echo "🎨 [INIT] Rendering cinematic loop..."
         ffmpeg -framerate 1/5 -pattern_type glob -i "$SEARCH_PATH/promo_*.png" \
           -vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,format=yuv420p" \
-          -c:v libx264 -preset ultrafast -r 24 -pix_fmt yuv420p -y /app/assets/promo.mp4
+          -c:v libx264 -preset ultrafast -r 25 -pix_fmt yuv420p -y /app/assets/promo.mp4
     fi
     
     if [ -f "/app/assets/promo.mp4" ]; then
