@@ -66,6 +66,7 @@ def get_analytics():
         return {"status": "OFFLINE", "error": str(e)}
 
 @app.get("/api/latest-video")
+@app.get("/next")
 def get_latest_video():
     """Returns the filename of the most recent video in the output directory."""
     try:
