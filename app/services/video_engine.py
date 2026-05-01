@@ -20,7 +20,7 @@ def create_video(sadtalker_video_path, output_path, script_text=""):
         f.write(ticker_text)
 
     # FFmpeg Filter Complex for World-Class News Look:
-    # We use 'textfile' for 100% safety against syntax errors
+    # We use quoted expressions for x and y to prevent ARM-based parser errors
     filters = (
         "[0:v]scale=1280:720[studio];"
         "[1:v]scale=720:-1[anchor];"
@@ -28,7 +28,7 @@ def create_video(sadtalker_video_path, output_path, script_text=""):
         f"[2:v]scale=150:-1[logo];"
         "[v1][logo]overlay=W-w-30:30[v2];"
         "[v2]drawtext=text='LIVE':fontcolor=white:fontsize=24:x=40:y=40:box=1:boxcolor=red@0.9:boxborderw=10[v3];"
-        f"[v3]drawtext=fontfile='{font_path}':textfile='{ticker_file}':x=w-mod(t*200,w+tw):y=h-80:fontsize=40:fontcolor=white:box=1:boxcolor=black@0.8:boxborderw=20"
+        f"[v3]drawtext=fontfile='{font_path}':textfile='{ticker_file}':x='w-mod(t*200,w+tw)':y='h-100':fontsize=45:fontcolor=white:box=1:boxcolor=black@0.8:boxborderw=20"
     )
 
     # Pre-Flight Check: Verify Assets
