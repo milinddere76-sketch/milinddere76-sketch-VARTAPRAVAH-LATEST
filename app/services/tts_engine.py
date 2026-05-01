@@ -1,6 +1,6 @@
 from gtts import gTTS
 import os
-import config
+from app import config
 from app.text_cleaner import clean_marathi
 
 def female_voice_effect(file):
