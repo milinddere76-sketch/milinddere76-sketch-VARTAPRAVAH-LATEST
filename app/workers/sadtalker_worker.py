@@ -109,9 +109,16 @@ while True:
         sadtalker_video = os.path.join(config.OUTPUT_DIR, f"lean_bulletin_{task_id}.mp4")
         
         print(f"⚡ [LEAN-MODE] Generating high-speed loop using OPTIMIZED command...")
-        # Exact command provided by USER
-        lean_cmd = f"ffmpeg -y -i {audio_file} -loop 1 -i {face_image} -c:v libx264 -preset ultrafast -tune stillimage -r 24 -s 1280x720 -shortest {sadtalker_video}"
-        os.system(lean_cmd)
+        # Upgraded to subprocess for detailed error reporting
+        lean_cmd = [
+            "ffmpeg", "-y", "-i", audio_file, "-loop", "1", "-i", face_image,
+            "-c:v", "libx264", "-preset", "ultrafast", "-tune", "stillimage",
+            "-r", "24", "-s", "1280x720", "-shortest", sadtalker_video
+        ]
+        
+        result = subprocess.run(lean_cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"❌ [FFMPEG-ERROR] {result.stderr}")
         
         if os.path.exists(sadtalker_video):
             # 4. Final Video Composition (Ticker + Overlays)
