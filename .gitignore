@@ -13,6 +13,8 @@ output/
 !app/assets/*.jpg
 !app/assets/*.mp4
 !streamer/assets/*.mp4
+!streamer/assets/*.png
+!streamer/assets/*.jpg
 
 # Environment variables and Keys
 .env
