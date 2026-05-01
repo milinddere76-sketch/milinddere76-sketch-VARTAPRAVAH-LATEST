@@ -12,18 +12,25 @@ while true; do
   # 1. Start fresh with the FFmpeg header
   echo "ffconcat version 1.0" > "$PLAYLIST"
 
-  # 2. PRIORITY: Add Breaking News Bulletins first
+  # 2. INTRO: Always start with the Promo (Branding First)
+  if [ -f "/app/assets/promo.mp4" ]; then
+    echo "file '/app/assets/promo.mp4'" >> "$PLAYLIST"
+  fi
+
+  # 3. PRIORITY: Add Breaking News Bulletins
   for file in "$VIDEO_DIR"/breaking/*.mp4; do
     if [ -f "$file" ]; then
       echo "file '$file'" >> "$PLAYLIST"
     fi
   done
 
-  # 3. STANDARD: Add regular news bulletins
+  # 4. STANDARD: Add regular news bulletins
   counter=0
+  has_news=false
   for file in "$VIDEO_DIR"/*.mp4; do
     if [ -f "$file" ]; then
       echo "file '$file'" >> "$PLAYLIST"
+      has_news=true
       ((counter++))
       
       # Insert promo every 5 videos (approx every 15 min)
@@ -33,8 +40,12 @@ while true; do
     fi
   done
 
-  # 4. ZERO-DOWNTIME SECRET: Always add the long loop fallback at the end
-  # This ensures FFmpeg always has content to read before the next loop cycle.
+  # 5. IDLE LOOP: If no news, add Promo + Fallback Loop
+  if [ "$has_news" = false ]; then
+     echo "file '/app/assets/promo.mp4'" >> "$PLAYLIST"
+  fi
+
+  # 6. ZERO-DOWNTIME SECRET: Always add the long loop fallback at the end
   echo "file '/app/assets/fallback.mp4'" >> "$PLAYLIST"
 
   # Wait 10 seconds before the next sync
