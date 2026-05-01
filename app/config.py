@@ -33,40 +33,12 @@ TTS_MODEL = os.getenv("TTS_MODEL", "tts_models/multilingual/multi-dataset/xtts_v
 MAX_WORKERS = 1  # SadTalker is VRAM intensive
 
 # --- PATHS ---
-def get_assets_dir():
-    """Get assets directory with proper fallbacks."""
-    # 1. Try nested path (Standard Production)
-    path1 = "/app/app/assets"
-    if os.path.exists(path1):
-        return path1
-    
-    # 2. Try absolute path
-    path2 = "/app/assets"
-    if os.path.exists(path2):
-        return path2
-    
-    # 3. Local dev path
-    base = os.path.dirname(os.path.abspath(__file__))
-    path3 = os.path.join(base, "assets")
-    if os.path.exists(path3):
-        return path3
-    
-    # 4. Create and return default
-    os.makedirs(path1, exist_ok=True)
-    return path1
+ASSETS_DIR = "/app/app/assets"
+OUTPUT_DIR = "/app/output"
 
-def get_output_dir():
-    """Get output directory with proper fallbacks."""
-    path1 = "/app/output"
-    path2 = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "output")
-    
-    if os.path.exists(path1):
-        return path1
-    
-    os.makedirs(path1, exist_ok=True)
-    return path1
+# Ensure directories exist
+os.makedirs(ASSETS_DIR, exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-ASSETS_DIR = get_assets_dir()
-OUTPUT_DIR = get_output_dir()
 print(f"📂 [CONFIG] Assets: {ASSETS_DIR}")
 print(f"📂 [CONFIG] Output: {OUTPUT_DIR}")
