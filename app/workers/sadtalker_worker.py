@@ -109,11 +109,13 @@ while True:
         sadtalker_video = os.path.join(config.OUTPUT_DIR, f"lean_bulletin_{task_id}.mp4")
         
         print(f"⚡ [LEAN-MODE] Generating high-speed loop using OPTIMIZED command...")
-        # Upgraded to subprocess for detailed error reporting
+        # Upgraded to ARM64-Robust command
         lean_cmd = [
-            "ffmpeg", "-y", "-i", audio_file, "-loop", "1", "-i", face_image,
+            "ffmpeg", "-y", "-loop", "1", "-i", face_image,
+            "-i", audio_file,
             "-c:v", "libx264", "-preset", "ultrafast", "-tune", "stillimage",
-            "-r", "24", "-s", "1280x720", "-shortest", sadtalker_video
+            "-pix_fmt", "yuv420p", "-r", "25", "-s", "1280x720", "-shortest",
+            sadtalker_video
         ]
         
         result = subprocess.run(lean_cmd, capture_output=True, text=True)
