@@ -7,8 +7,13 @@ services:
     container_name: vartapravah_stream_oracle
     restart: always
     env_file: .env
+    ports:
+      - "1935:1935"
+      - "8080:8080"
     volumes:
-      - ./output:/app/videos
+      - ./output:/home/ubuntu/videos
+      - ./queue:/home/ubuntu/queue
+      - ./logs:/home/ubuntu/logs
       - ./streamer/assets:/app/assets
     network_mode: bridge
     logging:

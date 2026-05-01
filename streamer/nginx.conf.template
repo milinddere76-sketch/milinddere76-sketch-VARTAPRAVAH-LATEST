@@ -1,0 +1,44 @@
+worker_processes auto;
+rtmp_auto_push on;
+events {}
+
+rtmp {
+    server {
+        listen 1935;
+        chunk_size 4096;
+
+        application live {
+            live on;
+            record off;
+
+            # HLS Support
+            hls on;
+            hls_path /var/www/hls;
+            hls_fragment 3;
+            hls_playlist_length 60;
+
+            # Push to YouTube (Injected via Environment Variable)
+            push ${YOUTUBE_RTMP_URL};
+        }
+    }
+}
+
+http {
+    server {
+        listen 8080;
+
+        location /live {
+            add_header 'Cache-Control' 'no-cache';
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            types {
+                application/vnd.apple.mpegurl m3u8;
+                video/mp2t ts;
+            }
+            root /var/www/hls;
+        }
+
+        location /stat {
+            rtmp_stat all;
+        }
+    }
+}

@@ -36,8 +36,9 @@ def create_video(sadtalker_video_path, output_path, script_text=""):
     ffmpeg -y -i {sadtalker_video_path} \
     -i {logo_path} \
     -filter_complex "{filters}" \
-    -c:v libx264 -preset fast -pix_fmt yuv420p \
-    -c:a aac -b:a 192k \
+    -r 24 \
+    -c:v libx264 -preset ultrafast -pix_fmt yuv420p \
+    -c:a aac -b:a 128k \
     {output_path}
     """
     

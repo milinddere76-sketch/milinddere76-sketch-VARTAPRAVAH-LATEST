@@ -1,0 +1,25 @@
+# check if there is at least one published port
+
+#! streamer-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: streamer-published
+    namespace: vartapravah-latest
+    labels:
+        com.docker.compose.project: vartapravah-latest
+        com.docker.compose.service: streamer
+spec:
+    selector:
+        com.docker.compose.project: vartapravah-latest
+        com.docker.compose.service: streamer
+    ports:
+        - name: streamer-1935
+          port: 1935
+          protocol: TCP
+          targetPort: streamer-1935
+        - name: streamer-8080
+          port: 8080
+          protocol: TCP
+          targetPort: streamer-8080

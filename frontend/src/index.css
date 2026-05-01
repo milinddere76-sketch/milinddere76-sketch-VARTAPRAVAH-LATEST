@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-brand-dark text-white font-sans antialiased;
+    background-image: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+    min-height: 100vh;
+  }
+}
+
+.glass-card {
+  @apply bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-xl transition-all duration-300;
+}
+
+.glass-card:hover {
+  @apply bg-white/10 border-white/20;
+}
+
+.btn-primary {
+  @apply px-4 py-2 rounded-lg font-semibold bg-brand-accent hover:bg-sky-500 text-white transition-all shadow-lg active:scale-95;
+}
+
+.btn-danger {
+  @apply px-4 py-2 rounded-lg font-semibold bg-brand-danger hover:bg-red-500 text-white transition-all shadow-lg active:scale-95;
+}
+
+.btn-success {
+  @apply px-4 py-2 rounded-lg font-semibold bg-brand-success hover:bg-emerald-500 text-white transition-all shadow-lg active:scale-95;
+}
+
+.btn-warning {
+  @apply px-4 py-2 rounded-lg font-semibold bg-brand-warning hover:bg-amber-500 text-black transition-all shadow-lg active:scale-95;
+}

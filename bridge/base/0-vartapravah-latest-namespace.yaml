@@ -1,0 +1,8 @@
+#! 0-vartapravah-latest-namespace.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: vartapravah-latest
+    labels:
+        com.docker.compose.project: vartapravah-latest

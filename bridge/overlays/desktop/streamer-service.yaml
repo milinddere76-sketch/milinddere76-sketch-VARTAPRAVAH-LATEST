@@ -1,0 +1,11 @@
+# check if there is at least one published port
+
+#! streamer-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: streamer-published
+    namespace: vartapravah-latest
+spec:
+    type: LoadBalancer

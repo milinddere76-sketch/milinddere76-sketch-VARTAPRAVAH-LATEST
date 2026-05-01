@@ -28,6 +28,7 @@ services:
     volumes:
       - ./output:/app/output
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./ssh-key-2026-04-23.key:/app/oracle_key.key:ro
     depends_on:
       - redis
       - sadtalker
@@ -85,5 +86,18 @@ services:
     ports:
       - "6379:6379"
 
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: vartapravah-frontend
+    ports:
+      - "3000:80"
+    restart: always
+
 volumes:
   postgres_data:
+
+networks:
+  default:
+    name: news-network

@@ -1,0 +1,21 @@
+#! streamer-expose.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: streamer
+    namespace: vartapravah-latest
+    labels:
+        com.docker.compose.project: vartapravah-latest
+        com.docker.compose.service: streamer
+spec:
+    selector:
+        com.docker.compose.project: vartapravah-latest
+        com.docker.compose.service: streamer
+    ports:
+        - name: streamer-1935
+          port: 1935
+          targetPort: streamer-1935
+        - name: streamer-8080
+          port: 8080
+          targetPort: streamer-8080

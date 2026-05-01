@@ -1,0 +1,77 @@
+#! streamer-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: streamer
+    namespace: vartapravah-latest
+    labels:
+        com.docker.compose.project: vartapravah-latest
+        com.docker.compose.service: streamer
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: vartapravah-latest
+            com.docker.compose.service: streamer
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: vartapravah-latest
+                com.docker.compose.service: streamer
+        spec:
+            restartPolicy: Always
+            containers:
+                - name: vartapravah-stream-oracle
+                  image: vartapravah-latest-streamer
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: COMPOSE_DOCKER_CLI_BUILD
+                      value: "1"
+                    - name: DATABASE_URL
+                      value: "postgresql://postgres:password@postgres:5432/vartapravah"
+                    - name: DOCKER_BUILDKIT
+                      value: "1"
+                    - name: GROQ_API_KEY
+                      value: "YOUR_GROQ_API_KEY"
+                    - name: NEWS_API_KEY
+                      value: "YOUR_NEWS_API_KEY"
+                    - name: ORACLE_IP
+                      value: "80.225.209.104"
+                    - name: ORACLE_KEY_PATH
+                      value: "/app/oracle_key.key"
+                    - name: ORACLE_USER
+                      value: "ubuntu"
+                    - name: ORACLE_VIDEO_DIR
+                      value: "/home/ubuntu/videos"
+                    - name: YOUTUBE_RTMP_URL
+                      value: "rtmp://a.rtmp.youtube.com/live2/YOUR_STREAM_KEY"
+                  ports:
+                    - name: streamer-1935
+                      containerPort: 1935
+                    - name: streamer-8080
+                      containerPort: 8080
+                  volumeMounts:
+                    - name: home-ubuntu-videos
+                      mountPath: /home/ubuntu/videos
+                    - name: home-ubuntu-queue
+                      mountPath: /home/ubuntu/queue
+                    - name: home-ubuntu-logs
+                      mountPath: /home/ubuntu/logs
+                    - name: app-assets
+                      mountPath: /app/assets
+            volumes:
+                - name: home-ubuntu-videos
+                  hostPath:
+                    path: C:\VARTAPRAVAH-LATEST\output
+                - name: home-ubuntu-queue
+                  hostPath:
+                    path: C:\VARTAPRAVAH-LATEST\queue
+                - name: home-ubuntu-logs
+                  hostPath:
+                    path: C:\VARTAPRAVAH-LATEST\logs
+                - name: app-assets
+                  hostPath:
+                    path: C:\VARTAPRAVAH-LATEST\streamer\assets
