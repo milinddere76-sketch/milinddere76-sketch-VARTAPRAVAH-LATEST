@@ -23,8 +23,9 @@ COPY streamer/queue_manager.sh /app/queue_manager.sh
 COPY streamer/init_streamer.sh /app/init_streamer.sh
 RUN chmod +x /app/*.sh
 
-# Copy LOCAL assets
-COPY streamer/assets /app/assets
+# Copy ALL assets explicitly (including slides and logos)
+COPY streamer/assets/*.png /app/assets/
+COPY streamer/assets/*.mp4 /app/assets/
 RUN chmod -R 777 /app/assets
 
 # Start everything via the master init script
