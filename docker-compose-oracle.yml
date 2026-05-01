@@ -14,7 +14,7 @@ services:
       - ./output:/home/ubuntu/videos
       - ./queue:/home/ubuntu/queue
       - ./logs:/home/ubuntu/logs
-      - ./streamer/assets:/app/assets
+      - ./streamer/assets:/app/app/assets
     network_mode: bridge
     logging:
       driver: "json-file"

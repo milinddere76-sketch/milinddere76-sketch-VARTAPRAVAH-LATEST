@@ -13,7 +13,9 @@ while true; do
   echo "ffconcat version 1.0" > "$PLAYLIST"
 
   # 2. INTRO: Always start with the Promo (Branding First)
-  if [ -f "/app/assets/promo.mp4" ]; then
+  if [ -f "/app/app/assets/premium_promo.mp4" ]; then
+    echo "file '/app/app/assets/premium_promo.mp4'" >> "$PLAYLIST"
+  elif [ -f "/app/assets/promo.mp4" ]; then
     echo "file '/app/assets/promo.mp4'" >> "$PLAYLIST"
   fi
 
@@ -35,14 +37,22 @@ while true; do
       
       # Insert promo every 5 videos (approx every 15 min)
       if [ $((counter % 5)) -eq 0 ]; then
-        echo "file '/app/assets/promo.mp4'" >> "$PLAYLIST"
+        if [ -f "/app/app/assets/premium_promo.mp4" ]; then
+          echo "file '/app/app/assets/premium_promo.mp4'" >> "$PLAYLIST"
+        else
+          echo "file '/app/assets/promo.mp4'" >> "$PLAYLIST"
+        fi
       fi
     fi
   done
 
   # 5. IDLE LOOP: If no news, add Promo + Fallback Loop
   if [ "$has_news" = false ]; then
-     echo "file '/app/assets/promo.mp4'" >> "$PLAYLIST"
+     if [ -f "/app/app/assets/premium_promo.mp4" ]; then
+       echo "file '/app/app/assets/premium_promo.mp4'" >> "$PLAYLIST"
+     else
+       echo "file '/app/assets/promo.mp4'" >> "$PLAYLIST"
+     fi
   fi
 
   # 6. ZERO-DOWNTIME SECRET: Always add the long loop fallback at the end
