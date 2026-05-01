@@ -4,9 +4,17 @@
 echo "🚀 [INIT] Starting Varta Pravah Playout Node..."
 
 # 1. Setup Environment
-# 1. Setup Environment
-# Priority: Environment variable from Coolify/Docker
-YOUTUBE_RTMP_URL=${YOUTUBE_RTMP_URL:-rtmp://a.rtmp.youtube.com/live2/}
+# Fuse the Stream Key into the RTMP URL for definitive YouTube connection
+STREAM_KEY=${YOUTUBE_STREAM_KEY:-"qcu7-xesd-m4sv-9zvv-e335"}
+BASE_URL=${YOUTUBE_RTMP_URL:-"rtmp://a.rtmp.youtube.com/live2/"}
+
+# Ensure the URL ends with a slash before appending the key
+[[ "$BASE_URL" != */ ]] && BASE_URL="$BASE_URL/"
+FINAL_RTMP_URL="${BASE_URL}${STREAM_KEY}"
+
+# Export for envsubst
+export YOUTUBE_RTMP_URL="$FINAL_RTMP_URL"
+
 mkdir -p /home/ubuntu/queue /home/ubuntu/logs /home/ubuntu/videos/breaking /app/assets
 chmod -R 777 /app/assets /home/ubuntu/queue /home/ubuntu/logs /home/ubuntu/videos
 
