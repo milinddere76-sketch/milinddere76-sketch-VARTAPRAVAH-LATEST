@@ -119,6 +119,10 @@ while True:
             final_path = video_engine.generate_video(sadtalker_video, script, final_video)
             
             if final_path and os.path.exists(final_path):
+                # FIX 4: Proactively update the playlist for zero-downtime streaming
+                from app.services.playlist_manager import generate_playlist
+                generate_playlist()
+                
                 print(f"✅ [SADTALKER-WORKER] Bulletin Completed: {final_path}")
                 
                 # 5. AUTO-TRANSFER TO ORACLE (STEP 4)
