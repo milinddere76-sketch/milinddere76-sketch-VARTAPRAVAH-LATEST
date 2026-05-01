@@ -31,7 +31,6 @@ services:
     volumes:
       - ./output:/app/output
       - ./queue:/app/queue
-      - ./ssh-key-2026-04-23.key:/app/oracle_key.key:ro
     depends_on:
       - app
       - redis
