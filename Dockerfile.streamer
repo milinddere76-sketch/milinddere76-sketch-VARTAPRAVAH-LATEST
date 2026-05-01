@@ -27,7 +27,9 @@ RUN chmod +x /app/stream.sh
 COPY streamer/assets /app/assets
 
 # Use envsubst to inject YOUTUBE_RTMP_URL into nginx.conf, test config, then start
-CMD envsubst '$YOUTUBE_RTMP_URL' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
+# Fail-safe: If YOUTUBE_RTMP_URL is empty, default to a local null path to prevent Nginx crash
+CMD export YOUTUBE_RTMP_URL=${YOUTUBE_RTMP_URL:-rtmp://127.0.0.1/dev/null} && \
+    envsubst '$YOUTUBE_RTMP_URL' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
     nginx -t && \
     nginx && \
     liquidsoap /app/playout.liq

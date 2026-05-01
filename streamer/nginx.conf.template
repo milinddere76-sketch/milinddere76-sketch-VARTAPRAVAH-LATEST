@@ -19,7 +19,7 @@ rtmp {
             hls_playlist_length 60;
 
             # Push to YouTube (Injected via Environment Variable)
-            push ${YOUTUBE_RTMP_URL};
+            push "${YOUTUBE_RTMP_URL}";
         }
     }
 }
