@@ -43,8 +43,19 @@ def upload_to_oracle(video_path, is_breaking=False):
     
     # Priority handling: Breaking news goes to its own subfolder
     subfolder = "breaking/" if is_breaking else ""
-    remote_dest = f"{config.ORACLE_USER}@{config.ORACLE_IP}:{config.ORACLE_VIDEO_DIR}/{subfolder}"
+    # Target specific filename for maximum reliability and ensure permissions
+    remote_dest = f"{config.ORACLE_USER}@{config.ORACLE_IP}:{config.ORACLE_VIDEO_DIR}/{subfolder}{filename}"
     
+    # HARDEN DESTINATION: Force permissions on remote folder before upload
+    try:
+        subprocess.run([
+            "ssh", "-i", ACTIVE_KEY_PATH, "-o", "StrictHostKeyChecking=no",
+            f"{config.ORACLE_USER}@{config.ORACLE_IP}",
+            f"mkdir -p {config.ORACLE_VIDEO_DIR}/{subfolder} && chmod 777 {config.ORACLE_VIDEO_DIR}/{subfolder}"
+        ], timeout=15)
+    except:
+        pass
+
     cmd = [
         "scp", "-i", ACTIVE_KEY_PATH,
         "-o", "StrictHostKeyChecking=no",
