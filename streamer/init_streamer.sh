@@ -12,8 +12,12 @@ BASE_URL=${YOUTUBE_RTMP_URL:-"rtmp://a.rtmp.youtube.com/live2/"}
 [[ "$BASE_URL" != */ ]] && BASE_URL="$BASE_URL/"
 FINAL_RTMP_URL="${BASE_URL}${STREAM_KEY}"
 
-# Export for envsubst
+# Export for playout.sh and envsubst
 export YOUTUBE_RTMP_URL="$FINAL_RTMP_URL"
+
+# VERIFICATION: Show masked URL to confirm fusion worked
+MASKED_URL=$(echo "$YOUTUBE_RTMP_URL" | sed 's/live2\/.*/live2\/XXXXX/')
+echo "🔗 [INIT] Target Broadcast URL: $MASKED_URL"
 
 mkdir -p /home/ubuntu/queue /home/ubuntu/logs /home/ubuntu/videos/breaking /app/assets
 chmod -R 777 /app/assets /home/ubuntu/queue /home/ubuntu/logs /home/ubuntu/videos

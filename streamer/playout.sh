@@ -18,12 +18,13 @@ while true; do
 
   # Use environment variable if present, otherwise default to the provided key
   echo "📺 [PLAYOUT] Starting live broadcast to Oracle relay..."
+  # DIRECT BROADCAST: Bypassing Nginx for maximum reliability
   ffmpeg -re -f concat -safe 0 -i "$PLAYLIST" \
     -vf "format=yuv420p,scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2" \
     -c:v libx264 -preset ultrafast -tune zerolatency -b:v 2500k -maxrate 2500k -bufsize 5000k \
     -threads 0 -r 25 -g 50 -keyint_min 50 -x264-params "keyint=50" \
     -c:a aac -b:a 128k -ar 44100 -f flv \
-    "rtmp://localhost:1935/live/stream"
+    "$YOUTUBE_RTMP_URL"
 
   echo "⚠️ [$(date)] Stream ended or crashed. Restarting in 2s..." >> "$LOG_FILE"
   sleep 2
