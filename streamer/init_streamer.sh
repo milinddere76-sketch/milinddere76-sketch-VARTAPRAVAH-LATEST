@@ -4,13 +4,18 @@
 echo "🚀 [INIT] Starting Varta Pravah Playout Node..."
 
 # 1. Setup Environment
-# Fuse the Stream Key into the RTMP URL for definitive YouTube connection
+# SMARTER FUSION: Ensure the Stream Key is present exactly ONCE
 STREAM_KEY=${YOUTUBE_STREAM_KEY:-"qcu7-xesd-m4sv-9zvv-e335"}
 BASE_URL=${YOUTUBE_RTMP_URL:-"rtmp://a.rtmp.youtube.com/live2/"}
 
-# Ensure the URL ends with a slash before appending the key
-[[ "$BASE_URL" != */ ]] && BASE_URL="$BASE_URL/"
-FINAL_RTMP_URL="${BASE_URL}${STREAM_KEY}"
+if [[ "$BASE_URL" == *"$STREAM_KEY"* ]]; then
+    echo "✅ [INIT] Stream Key already present in URL."
+    FINAL_RTMP_URL="$BASE_URL"
+else
+    echo "🔧 [INIT] Appending Stream Key to Base URL..."
+    [[ "$BASE_URL" != */ ]] && BASE_URL="$BASE_URL/"
+    FINAL_RTMP_URL="${BASE_URL}${STREAM_KEY}"
+fi
 
 # Export for playout.sh and envsubst
 export YOUTUBE_RTMP_URL="$FINAL_RTMP_URL"
