@@ -15,21 +15,18 @@ RUN mkdir -p /var/www/hls /run && chmod -R 777 /var/www/hls /run
 
 WORKDIR /app
 
-# Copy configurations
+# Copy configurations and scripts
 COPY streamer/nginx.conf.template /etc/nginx/nginx.conf.template
-COPY streamer/playout.liq /app/playout.liq
-
-# Copy the stream script (as backup/utility)
-COPY streamer/stream.sh /app/stream.sh
-RUN chmod +x /app/stream.sh
+COPY streamer/playout.sh /app/playout.sh
+COPY streamer/queue_manager.sh /app/queue_manager.sh
+RUN chmod +x /app/*.sh
 
 # Copy LOCAL assets
 COPY streamer/assets /app/assets
 
-# Use envsubst to inject YOUTUBE_RTMP_URL into nginx.conf, test config, then start
-# Fail-safe: If YOUTUBE_RTMP_URL is empty, default to a local null path to prevent Nginx crash
+# Use envsubst to inject YOUTUBE_RTMP_URL into nginx.conf, start nginx, run queue manager, then playout
 CMD export YOUTUBE_RTMP_URL=${YOUTUBE_RTMP_URL:-rtmp://127.0.0.1/dev/null} && \
     envsubst '$YOUTUBE_RTMP_URL' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
-    nginx -t && \
     nginx && \
-    liquidsoap /app/playout.liq
+    /app/queue_manager.sh & \
+    /app/playout.sh

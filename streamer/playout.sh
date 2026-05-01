@@ -16,11 +16,14 @@ while true; do
     echo "file '/home/ubuntu/videos/promo.mp4'" >> "$PLAYLIST"
   fi
 
+  # Use environment variable if present, otherwise default to the provided key
+  TARGET_URL=${YOUTUBE_RTMP_URL:-rtmp://a.rtmp.youtube.com/live2/qcu7-xesd-m4sv-9zvv-e335}
+  
   ffmpeg -re -f concat -safe 0 -i "$PLAYLIST" \
     -c:v libx264 -preset veryfast -b:v 2500k \
     -pix_fmt yuv420p -g 50 \
     -c:a aac -b:a 128k \
-    -f flv rtmp://a.rtmp.youtube.com/live2/YOUR_STREAM_KEY
+    -f flv "$TARGET_URL"
 
   echo "⚠️ [$(date)] Stream ended or crashed. Restarting in 2s..." >> "$LOG_FILE"
   sleep 2
