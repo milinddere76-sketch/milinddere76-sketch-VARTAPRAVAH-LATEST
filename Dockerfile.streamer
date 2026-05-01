@@ -20,18 +20,12 @@ WORKDIR /app
 COPY streamer/nginx.conf.template /etc/nginx/nginx.conf.template
 COPY streamer/playout.sh /app/playout.sh
 COPY streamer/queue_manager.sh /app/queue_manager.sh
+COPY streamer/init_streamer.sh /app/init_streamer.sh
 RUN chmod +x /app/*.sh
 
 # Copy LOCAL assets
 COPY streamer/assets /app/assets
 RUN chmod -R 777 /app/assets
 
-# Use envsubst to inject YOUTUBE_RTMP_URL, generate promo if missing, start nginx, run queue manager, then playout
-CMD export YOUTUBE_RTMP_URL=${YOUTUBE_RTMP_URL:-rtmp://127.0.0.1/dev/null} && \
-    envsubst '$YOUTUBE_RTMP_URL' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
-    nginx && \
-    echo "🔍 Checking assets..." && ls -l /app/assets/ && \
-    ( [ ! -f /app/assets/promo.mp4 ] && ffmpeg -framerate 1/5 -i /app/assets/promo_%d.png -vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2" -c:v libx264 -r 24 -pix_fmt yuv420p /app/assets/promo.mp4 || echo "⚠️ Promo creation failed" ) && \
-    ( [ ! -f /app/assets/fallback.mp4 ] && cp /app/assets/promo.mp4 /app/assets/fallback.mp4 || true ) && \
-    /app/queue_manager.sh & \
-    /app/playout.sh
+# Start everything via the master init script
+CMD ["/app/init_streamer.sh"]
