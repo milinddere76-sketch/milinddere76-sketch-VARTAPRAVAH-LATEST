@@ -8,8 +8,18 @@ FALLBACK = "/app/assets/promo.mp4"
 def generate_playlist():
     """
     FIX 4: Proactive Playlist Generation.
-    Ensures the broadcast queue is always valid and never empty.
+    BULLETPROOF FIX: Auto-fallback if playlist is missing.
     """
+    # 0. BULLETPROOF INITIALISATION: Ensure a playlist always exists
+    if not os.path.exists(PLAYLIST):
+        print("🛡️ [BULLETPROOF] Playlist missing. Initialising auto-fallback...")
+        try:
+            os.makedirs(os.path.dirname(PLAYLIST), exist_ok=True)
+            with open(PLAYLIST, "w") as f:
+                f.write(f"file '{FALLBACK}'\n")
+        except Exception as e:
+            print(f"⚠️ [BULLETPROOF] Startup repair failed: {e}")
+
     print("📋 [PLAYLIST] Synchronizing broadcast queue...")
     files = []
 
