@@ -25,6 +25,9 @@ RUN chmod +x /app/*.sh
 # Copy LOCAL assets
 COPY streamer/assets /app/assets
 
+# Generate promo.mp4 from slides (5 seconds per slide)
+RUN ffmpeg -framerate 1/5 -i /app/assets/promo_%d.png -c:v libx264 -r 25 -pix_fmt yuv420p /app/assets/promo.mp4 || true
+
 # Use envsubst to inject YOUTUBE_RTMP_URL into nginx.conf, start nginx, run queue manager, then playout
 CMD export YOUTUBE_RTMP_URL=${YOUTUBE_RTMP_URL:-rtmp://127.0.0.1/dev/null} && \
     envsubst '$YOUTUBE_RTMP_URL' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
