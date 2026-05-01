@@ -1,59 +1,57 @@
-from TTS.api import TTS
 from gtts import gTTS
-import config
 import os
+import config
+from app.text_cleaner import clean_marathi
 
-tts_model = None
+def female_voice_effect(file):
+    """Fake female pitch shift."""
+    temp = file.replace(".mp3", "_f.mp3")
+    os.system(f"ffmpeg -y -i {file} -filter:a 'asetrate=44100*1.1,atempo=0.95' {temp} > /dev/null 2>&1")
+    if os.path.exists(temp):
+        os.rename(temp, file)
 
-def init_tts():
-    """Initializes the Neural TTS engine."""
-    global tts_model
-    if tts_model is None:
-        model_name = "tts_models/multilingual/multi-dataset/xtts_v2"
-        print(f"🎙️ [TTS] Initializing XTTS v2 Engine...")
-        try:
-            tts_model = TTS(model_name=model_name).to("cuda" if os.getenv("USE_GPU") == "True" else "cpu")
-        except Exception as e:
-            print(f"⚠️ [TTS] Failed to load XTTS: {e}")
+def male_voice_effect(file):
+    """Fake male pitch shift."""
+    temp = file.replace(".mp3", "_m.mp3")
+    os.system(f"ffmpeg -y -i {file} -filter:a 'asetrate=44100*0.9,atempo=1.05' {temp} > /dev/null 2>&1")
+    if os.path.exists(temp):
+        os.rename(temp, file)
+
+def enhance_audio(input_file, output_file):
+    """Broadcast Enhancement."""
+    cmd = f"""
+    ffmpeg -y -i {input_file} \
+    -filter:a "atempo=1.05,volume=1.5,highpass=f=200,lowpass=f=3000" \
+    -ar 44100 \
+    {output_file} > /dev/null 2>&1
+    """
+    os.system(cmd)
+
+def generate_tts(text, output_file, anchor_type="female"):
+    """Full Synthesis Pipeline with Gender Effects."""
+    text = clean_marathi(text)
+    
+    tts = gTTS(text=text, lang='mr', slow=False)
+    temp_raw = os.path.join(config.OUTPUT_DIR, f"raw_{os.path.basename(output_file)}")
+    tts.save(temp_raw)
+
+    # Apply Gender Identity Effect
+    if anchor_type == "male":
+        male_voice_effect(temp_raw)
+    else:
+        female_voice_effect(temp_raw)
+
+    # Final Broadcast Enhancement
+    enhance_audio(temp_raw, output_file)
+
+    if os.path.exists(temp_raw):
+        os.remove(temp_raw)
+
+    return output_file
 
 def generate_audio(text, file_path, anchor_type="female"):
-    """
-    Generates Marathi audio with Anchor Identity and gTTS fallback.
-    """
-    global tts_model
-    
-    # Select voice sample based on anchor type
-    # Expecting anchor_male.wav or anchor_female.wav in assets
-    voice_sample = os.path.join(config.ASSETS_DIR, f"anchor_{anchor_type}.wav")
-    
-    if not os.path.exists(voice_sample):
-        # Fallback to generic anchor_voice.wav if specific one is missing
-        voice_sample = os.path.join(config.ASSETS_DIR, "anchor_voice.wav")
-
-    # Attempt XTTS (Pro Quality)
-    if tts_model:
-        try:
-            print(f"🎙️ [XTTS] Synthesizing {anchor_type.upper()} voice...")
-            tts_model.tts_to_file(
-                text=text,
-                language="mr",
-                speaker_wav=voice_sample if os.path.exists(voice_sample) else None,
-                file_path=file_path
-            )
-            return file_path
-        except Exception as e:
-            print(f"⚠️ [XTTS] Failed: {e}. Falling back to gTTS.")
-
-    # Fallback: gTTS (Lightweight/Reliable)
-    try:
-        print(f"🎙️ [gTTS] Using emergency fallback for Marathi speech...")
-        tts = gTTS(text=text, lang='mr')
-        tts.save(file_path)
-        return file_path
-    except Exception as e:
-        print(f"❌ [TTS] All synthesis methods failed: {e}")
-        return None
+    return generate_tts(text, file_path, anchor_type)
 
 class TTSEngine:
     def generate_audio(self, text, output_path, anchor_type="female"):
-        return generate_audio(text, output_path, anchor_type)
+        return generate_tts(text, output_path, anchor_type)

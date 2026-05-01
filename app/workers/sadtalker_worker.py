@@ -93,9 +93,12 @@ while True:
         
         print(f"🎙️ [SADTALKER-WORKER] Processing Task {task_id} for {anchor_type.upper()}...")
 
-        # 1. Neural TTS Synthesis
+        # 1. News Style Formatting (Adds Anchor Feel)
+        formatted_script = f"मुख्य बातम्या...\n\n{script}\n\nधन्यवाद।"
+        
+        # 2. Neural TTS Synthesis
         audio_file = os.path.join(config.OUTPUT_DIR, f"audio_{task_id}.mp3")
-        generate_audio(script, audio_file, anchor_type=anchor_type)
+        generate_audio(formatted_script, audio_file, anchor_type=anchor_type)
 
         if not os.path.exists(audio_file):
             print("❌ [SADTALKER-WORKER] TTS Failed")
@@ -105,9 +108,9 @@ while True:
         face_image = os.path.join(config.ASSETS_DIR, f"anchor_{anchor_type}.jpg")
         sadtalker_video = os.path.join(config.OUTPUT_DIR, f"lean_bulletin_{task_id}.mp4")
         
-        print(f"⚡ [LEAN-MODE] Generating high-speed loop for {anchor_type}...")
-        # This creates a video from the image, synced to the audio length
-        lean_cmd = f"ffmpeg -y -loop 1 -i {face_image} -i {audio_file} -c:v libx264 -tune stillimage -c:a aac -b:a 128k -shortest -pix_fmt yuv420p {sadtalker_video}"
+        print(f"⚡ [LEAN-MODE] Generating high-speed loop using OPTIMIZED command...")
+        # Exact command provided by USER
+        lean_cmd = f"ffmpeg -y -i {audio_file} -loop 1 -i {face_image} -c:v libx264 -preset ultrafast -tune stillimage -r 24 -s 1280x720 -shortest {sadtalker_video}"
         os.system(lean_cmd)
         
         if os.path.exists(sadtalker_video):
@@ -138,8 +141,15 @@ while True:
         else:
             print("❌ [SADTALKER-WORKER] SadTalker Synthesis Failed")
             r.incr("stats_errors_count")
+        # STORAGE MANAGEMENT: Auto-delete files older than 1 day
+        print(f"🧹 [STORAGE] Cleaning up old bulletins...")
+        os.system("find /app/output -type f -mtime +1 -delete")
+
+        # LIMIT WORKER LOAD: Sleep for 60 seconds after each task to prevent CPU overload
+        print(f"⏳ [LOAD-LIMIT] Cooldown for 60 seconds...")
+        time.sleep(60)
 
     except Exception as e:
         print("🚨 [SADTALKER-WORKER] Critical Error:", e)
         r.incr("stats_errors_count")
-        time.sleep(2)
+        time.sleep(10)
