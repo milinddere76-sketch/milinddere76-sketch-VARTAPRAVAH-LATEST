@@ -1,42 +1,37 @@
-# Byte-compiled / optimized / DLL files
+# --- VARTA PRAVAH PROTECTION ---
+# NEVER IGNORE BRANDING ASSETS
+!streamer/assets/*.png
+!streamer/assets/*.mp4
+!streamer/assets/*.jpg
+!app/assets/*.png
+!app/assets/*.jpg
+!app/assets/*.mp4
+
+# Python / Cache
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Output artifacts
-output/
-*.mp3
-*.mp4
-*.png
-*.jpg
-!app/assets/*.png
-!app/assets/*.jpg
-!app/assets/*.mp4
-!streamer/assets/*.mp4
-!streamer/assets/*.png
-!streamer/assets/*.jpg
+# IGNORE ONLY GENERATED CONTENT (Saves space)
+output/*.mp4
+output/*.mp3
+output/*.png
+output/*.jpg
+sadtalker_output/
+temp/
 
-# Environment variables and Keys
+# Environment and Private Keys
 .env
 *.key
 *.pem
 
-# Local AI checkpoints and data (Heavy folders)
+# Heavy AI Data (Keep repo light)
 /checkpoints/
 /SadTalker/
 /Wav2Lip/
 
-# Keep our Docker service folders
-!/sadtalker/
-!/tts/
-!/video_worker/
-!/streamer/
-!/app/
-
-# OS generated files
+# OS / Node
 .DS_Store
-Thumbs.db
-# Node dependencies
 node_modules/
 **/node_modules/
 build/
