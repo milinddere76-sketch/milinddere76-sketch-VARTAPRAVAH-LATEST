@@ -19,7 +19,9 @@ while true; do
   # Use environment variable if present, otherwise default to the provided key
   echo "📺 [PLAYOUT] Starting live broadcast to Oracle relay..."
   ffmpeg -re -f concat -safe 0 -i "$PLAYLIST" \
-    -c:v libx264 -preset ultrafast -tune zerolatency -c:a aac -b:a 128k -f flv \
+    -c:v libx264 -preset veryfast -b:v 2500k -maxrate 2500k -bufsize 5000k \
+    -pix_fmt yuv420p -g 50 -keyint_min 50 -x264-params "keyint=50" \
+    -c:a aac -b:a 128k -ar 44100 -f flv \
     "rtmp://localhost:1935/live/stream"
 
   echo "⚠️ [$(date)] Stream ended or crashed. Restarting in 2s..." >> "$LOG_FILE"
