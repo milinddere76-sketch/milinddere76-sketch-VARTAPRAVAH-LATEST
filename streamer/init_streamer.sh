@@ -18,17 +18,23 @@ echo "🎬 [INIT] Verifying branding assets..."
 ls -l /app/assets/
 
 if [ ! -f "/app/assets/promo.mp4" ]; then
-    echo "🔨 [INIT] Generating promo.mp4 from slides..."
-    # Explicitly look for promo_1.png through promo_5.png
-    ffmpeg -framerate 1/5 -start_number 1 -i /app/assets/promo_%d.png \
-      -vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2" \
-      -c:v libx264 -r 24 -pix_fmt yuv420p -y /app/assets/promo.mp4
+    echo "🔨 [INIT] Generating promo.mp4 from cinematic slides..."
+    # Robust check for any png files starting with promo_
+    FILES_COUNT=$(ls /app/assets/promo_*.png 2>/dev/null | wc -l)
+    echo "📊 [INIT] Found $FILES_COUNT promo slides."
     
-    if [ $? -eq 0 ]; then
+    if [ "$FILES_COUNT" -gt 0 ]; then
+        # Force render with explicit scale and format
+        ffmpeg -framerate 1/5 -pattern_type glob -i '/app/assets/promo_*.png' \
+          -vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,format=yuv420p" \
+          -c:v libx264 -r 24 -pix_fmt yuv420p -y /app/assets/promo.mp4
+    fi
+    
+    if [ -f "/app/assets/promo.mp4" ]; then
         echo "✅ [INIT] Promo generated successfully."
     else
-        echo "⚠️ [WARN] Promo generation failed. Creating emergency placeholder..."
-        ffmpeg -f lavfi -i color=c=blue:s=1280x720:d=10 -vf "drawtext=text='VARTA PRAVAH NEWS':fontcolor=white:fontsize=50:x=(w-tw)/2:y=(h-th)/2" -c:v libx264 -y /app/assets/promo.mp4
+        echo "⚠️ [WARN] Promo generation failed or images missing. Creating emergency placeholder..."
+        ffmpeg -f lavfi -i color=c=blue:s=1280x720:d=10 -vf "drawtext=text='VARTA PRAVAH NEWS':fontcolor=white:fontsize=60:x=(w-tw)/2:y=(h-th)/2" -c:v libx264 -pix_fmt yuv420p -y /app/assets/promo.mp4
     fi
 fi
 
