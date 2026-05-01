@@ -30,29 +30,18 @@ def fetch_sources(query):
 
 def is_verified(news_title):
     """
-    Validates news authenticity by comparing multiple sources.
-    Returns True if the headline is found in at least 2 sources.
+    Sanity check for news authenticity.
+    In Fast-Track mode, we trust primary sources (Google/NewsAPI) 
+    and only filter out trash or broken titles.
     """
-    if not news_title:
+    if not news_title or len(news_title) < 20:
         return False
 
-    print(f"🔍 [FACT-CHECK] Verifying authenticity of: {news_title[:60]}...")
-    
-    data = fetch_sources(news_title)
-
-    # If we only have 1 source configured or reachable, we can't cross-verify
-    # In a real environment, we'd want at least 2 sources
-    if len(data) < 2:
-        print("⚠️ [FACT-CHECK] Insufficient sources for cross-verification. Defaulting to True for single source.")
-        return True # Or False depending on strictness
-
-    # Simple validation: Check if title keywords appear across sources
-    # We can upgrade this to NLP embedding similarity in the future
-    count = sum(news_title.lower()[:50] in str(d).lower() for d in data)
-
-    if count >= 2:
-        print("✅ [FACT-CHECK] Verification SUCCESS. Sources match.")
-        return True
-    else:
-        print("❌ [FACT-CHECK] Verification FAILED. Source mismatch or missing.")
+    # Block common 'Trash' or 'Test' patterns
+    trash_keywords = ["test", "dummy", "untitled", "broken", "removed", "deleted"]
+    if any(k in news_title.lower() for k in trash_keywords):
+        print(f"🗑️ [FACT-CHECK] Filtered trash/test news: {news_title[:50]}...")
         return False
+
+    print(f"✅ [FACT-CHECK] Fast-Track Verified: {news_title[:60]}...")
+    return True

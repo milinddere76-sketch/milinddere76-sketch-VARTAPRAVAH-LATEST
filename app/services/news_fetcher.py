@@ -15,17 +15,37 @@ class NewsFetcher:
             
             headlines = []
             
-            # Fetch India Top Headlines
-            res1 = requests.get(url1)
-            articles1 = res1.json().get("articles", [])[:10]
-            headlines.extend([a.get("title", "") for a in articles1])
+            # 1. Fetch India Top Headlines (NewsAPI)
+            try:
+                res1 = requests.get(url1, timeout=10)
+                articles1 = res1.json().get("articles", [])[:10]
+                headlines.extend([a.get("title", "") for a in articles1 if a.get("title")])
+            except Exception:
+                pass
             
-            # Fetch Maharashtra specific news
-            res2 = requests.get(url2)
-            articles2 = res2.json().get("articles", [])[:5]
-            headlines.extend([a.get("title", "") for a in articles2])
+            # 2. Fetch Maharashtra specific news (NewsAPI)
+            try:
+                res2 = requests.get(url2, timeout=10)
+                articles2 = res2.json().get("articles", [])[:5]
+                headlines.extend([a.get("title", "") for a in articles2 if a.get("title")])
+            except Exception:
+                pass
             
-            return list(set(headlines))[:10] # Unique headlines, top 10
+            # 3. FALLBACK: Google News RSS (Always works, no API key needed)
+            if len(headlines) < 3:
+                try:
+                    rss_url = "https://news.google.com/rss/search?q=Maharashtra&hl=mr&gl=IN&ceid=IN:mr"
+                    res_rss = requests.get(rss_url, timeout=10)
+                    # Extracting titles from XML items (simple string find to avoid heavy xml libs)
+                    titles = res_rss.text.split("<title>")[2:12] # Skip first which is channel title
+                    for t in titles:
+                        clean_t = t.split("</title>")[0]
+                        if clean_t:
+                            headlines.append(clean_t)
+                except Exception:
+                    pass
+            
+            return list(set(headlines))[:15] # Unique headlines, top 15
         except Exception as e:
             print(f"Error fetching news: {e}")
             return []

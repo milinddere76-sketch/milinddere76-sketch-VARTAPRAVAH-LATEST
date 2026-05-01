@@ -60,6 +60,7 @@ def main():
             print(f"🕒 [SCHEDULER] Slot: {bulletin_type}")
             
             articles = fetch_news()
+            print(f"📰 [SCHEDULER] Found {len(articles)} articles from sources.")
             verified_articles = []
 
             for article in articles:
@@ -68,6 +69,8 @@ def main():
                     print(f"❌ Skipping unverified news: {title[:50]}")
                     continue
                 verified_articles.append(title)
+
+            print(f"✅ [SCHEDULER] {len(verified_articles)} articles verified.")
 
             if verified_articles:
                 news_text = "\n".join(verified_articles)
@@ -97,9 +100,11 @@ def main():
                         "script": script
                     }))
                     print(f"✅ [{anchor_type.upper()}] {bulletin_type} Bulletin queued.")
+            else:
+                print("⏳ [SCHEDULER] No verified news available this cycle.")
 
-            # 15-minute cycle
-            time.sleep(900)
+            # 5-minute cycle for faster production
+            time.sleep(300)
 
         except Exception as e:
             print(f"⚠️ [SCHEDULER] Error: {e}")
