@@ -75,7 +75,7 @@ def add_to_queue(video_filename, is_breaking=False):
         return False
 
 print("🎭 [SADTALKER-WORKER] Dedicated AI Face Engine starting...")
-init_tts()
+# init_tts() - Not needed in Light Mode
 
 while True:
     # Listening for high-fidelity synthesis tasks
