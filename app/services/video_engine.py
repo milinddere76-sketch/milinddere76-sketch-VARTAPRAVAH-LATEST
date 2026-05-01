@@ -7,6 +7,7 @@ def create_video(sadtalker_video_path, output_path, script_text=""):
     Overlays: News Ticker, LIVE Badge, and Channel Logo.
     """
     logo_path = os.path.join(config.ASSETS_DIR, "varta_logo.png")
+    studio_path = os.path.join(config.ASSETS_DIR, "studio_bg.png")
     font_path = "/usr/share/fonts/truetype/noto/NotoSansMarathi-Regular.ttf"
     
     if not os.path.exists(font_path):
@@ -17,26 +18,30 @@ def create_video(sadtalker_video_path, output_path, script_text=""):
     if not ticker_text:
         ticker_text = "वार्ता प्रवाह - २४/७ बातम्या"
 
-    # FFmpeg Filter Complex for Professional Look:
-    # 1. Scale input video to 1280x720
-    # 2. Overlay Logo at Top-Right
-    # 3. Add "LIVE" red badge at Top-Left
-    # 4. Add Scrolling Ticker at Bottom
+    # FFmpeg Filter Complex for World-Class News Look:
+    # 1. Start with 4K Studio (scaled to 1280x720)
+    # 2. Overlay Anchor on Studio (centered)
+    # 3. Add Channel Logo (Top-Right)
+    # 4. Add LIVE Badge (Top-Left)
+    # 5. Add Pro Ticker (Bottom)
     
     filters = (
-        "[0:v]scale=1280:720[bg];"
-        f"[1:v]scale=180:-1[logo];"
-        "[bg][logo]overlay=W-w-20:20[v1];"
-        "[v1]drawtext=text='● LIVE':fontcolor=white:fontsize=24:x=30:y=30:box=1:boxcolor=red@0.8:boxborderw=10[v2];"
-        f"[v2]drawtext=fontfile='{font_path}':text='{ticker_text}':x=w-mod(t*200,w+tw):y=h-60:fontsize=35:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=15"
+        "[0:v]scale=1280:720[studio];"
+        "[1:v]scale=720:-1[anchor];"
+        "[studio][anchor]overlay=(main_w-720)/2:(main_h-720)/2+50[v1];"
+        f"[2:v]scale=150:-1[logo];"
+        "[v1][logo]overlay=W-w-30:30[v2];"
+        "[v2]drawtext=text='● LIVE':fontcolor=white:fontsize=24:x=40:y=40:box=1:boxcolor=red@0.9:boxborderw=10[v3];"
+        f"[v3]drawtext=fontfile='{font_path}':text='{ticker_text}':x=w-mod(t*180,w+tw):y=h-70:fontsize=38:fontcolor=white:box=1:boxcolor=black@0.8:boxborderw=15"
     )
 
     cmd = f"""
-    ffmpeg -y -i {sadtalker_video_path} \
+    ffmpeg -y -loop 1 -i {studio_path} -t 30 \
+    -i {sadtalker_video_path} \
     -i {logo_path} \
     -filter_complex "{filters}" \
-    -r 24 \
-    -c:v libx264 -preset ultrafast -pix_fmt yuv420p \
+    -r 25 -shortest \
+    -c:v libx264 -preset veryfast -b:v 2500k -pix_fmt yuv420p \
     -c:a aac -b:a 128k \
     {output_path}
     """
