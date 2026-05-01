@@ -56,17 +56,21 @@ if [ ! -f "/app/assets/premium_promo.mp4" ] && [ ! -f "/app/assets/promo.mp4" ];
     echo "📊 [INIT] Found $FILES_COUNT promo slides in $SEARCH_PATH."
     
     if [ "$FILES_COUNT" -gt 0 ]; then
-        echo "🎨 [INIT] Rendering cinematic loop..."
+        echo "🎨 [INIT] Rendering CINEMATIC FULL-WIDESCREEN loop with News Heartbeat..."
+        # Force 16:9 Crop-to-Fill and add a synthetic rhythmic pulse for audio
         ffmpeg -framerate 1/5 -pattern_type glob -i "$SEARCH_PATH/promo_*.png" \
-          -vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,format=yuv420p" \
-          -c:v libx264 -preset ultrafast -r 25 -pix_fmt yuv420p -y /app/assets/promo.mp4
+          -f lavfi -i "sine=f=100:d=1,aecho=0.8:0.88:60:0.4" \
+          -filter_complex "[0:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,format=yuv420p[v]; [1:a]arealtime,aloop=-1:sample_rate=44100[a]" \
+          -map "[v]" -map "[a]" -c:v libx264 -preset ultrafast -r 25 -pix_fmt yuv420p -c:a aac -shortest -y /app/assets/promo.mp4
     fi
     
     if [ -f "/app/assets/promo.mp4" ]; then
-        echo "✅ [INIT] Promo generated successfully at /app/assets/promo.mp4"
+        echo "✅ [INIT] Cinematic Promo generated successfully at /app/assets/promo.mp4"
     else
-        echo "⚠️ [WARN] Promo generation failed. Creating emergency standby screen..."
-        ffmpeg -f lavfi -i color=c=blue:s=1280x720:d=10 -vf "drawtext=text='VARTA PRAVAH NEWS standby...':fontcolor=white:fontsize=70:x=(w-tw)/2:y=(h-th)/2" -c:v libx264 -preset ultrafast -pix_fmt yuv420p -y /app/assets/promo.mp4
+        echo "⚠️ [WARN] Promo generation failed. Creating emergency FULL-SCREEN standby..."
+        ffmpeg -f lavfi -i color=c=blue:s=1280x720:d=10 -f lavfi -i "sine=f=100:d=10" \
+          -vf "drawtext=text='VARTA PRAVAH NEWS standby...':fontcolor=white:fontsize=70:x=(w-tw)/2:y=(h-th)/2" \
+          -c:v libx264 -preset ultrafast -pix_fmt yuv420p -c:a aac -shortest -y /app/assets/promo.mp4
     fi
 fi
 
