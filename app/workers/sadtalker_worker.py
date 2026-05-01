@@ -13,6 +13,23 @@ video_engine = VideoEngine()
 
 os.makedirs(config.OUTPUT_DIR, exist_ok=True)
 
+# SECURITY SHIELD: Handle SSH key permissions for Docker volumes
+SAFE_KEY_PATH = "/tmp/oracle_key_safe.key"
+def prepare_safe_key():
+    if os.path.exists(config.ORACLE_KEY_PATH):
+        try:
+            print(f"🔐 [SECURITY] Hardening SSH key permissions...")
+            # Copy to tmp to bypass read-only volume permission issues
+            subprocess.run(["cp", config.ORACLE_KEY_PATH, SAFE_KEY_PATH], check=True)
+            subprocess.run(["chmod", "600", SAFE_KEY_PATH], check=True)
+            return SAFE_KEY_PATH
+        except Exception as e:
+            print(f"⚠️ [SECURITY] Failed to harden key: {e}")
+    return config.ORACLE_KEY_PATH
+
+# Initialize safe key
+ACTIVE_KEY_PATH = prepare_safe_key()
+
 def upload_to_oracle(video_path, is_breaking=False):
     """
     Python Upload Hook (STEP 4)
@@ -29,7 +46,7 @@ def upload_to_oracle(video_path, is_breaking=False):
     remote_dest = f"{config.ORACLE_USER}@{config.ORACLE_IP}:{config.ORACLE_VIDEO_DIR}/{subfolder}"
     
     cmd = [
-        "scp", "-i", config.ORACLE_KEY_PATH,
+        "scp", "-i", ACTIVE_KEY_PATH,
         "-o", "StrictHostKeyChecking=no",
         video_path,
         remote_dest
@@ -60,7 +77,7 @@ def add_to_queue(video_filename, is_breaking=False):
     
     # Command to append the file to the playlist.txt
     cmd = [
-        "ssh", "-i", config.ORACLE_KEY_PATH,
+        "ssh", "-i", ACTIVE_KEY_PATH,
         "-o", "StrictHostKeyChecking=no",
         f"{config.ORACLE_USER}@{config.ORACLE_IP}",
         f"echo \"file '{remote_file_path}'\" >> /home/ubuntu/queue/playlist.txt"
