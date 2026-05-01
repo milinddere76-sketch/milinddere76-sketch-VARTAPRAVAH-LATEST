@@ -105,7 +105,7 @@ while True:
             continue
 
         # 2. LEAN SYNTHESIS: Generate a video loop from anchor image + audio
-        face_image = os.path.join(config.ASSETS_DIR, f"anchor_{anchor_type}.jpg")
+        face_image = os.path.join(config.ASSETS_DIR, f"anchor_{anchor_type}.png")
         sadtalker_video = os.path.join(config.OUTPUT_DIR, f"lean_bulletin_{task_id}.mp4")
         
         print(f"⚡ [LEAN-MODE] Generating high-speed loop using OPTIMIZED command...")

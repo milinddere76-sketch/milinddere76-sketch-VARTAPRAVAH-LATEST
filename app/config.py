@@ -33,7 +33,7 @@ TTS_MODEL = os.getenv("TTS_MODEL", "tts_models/multilingual/multi-dataset/xtts_v
 MAX_WORKERS = 1  # SadTalker is VRAM intensive
 
 # --- PATHS ---
-ASSETS_DIR = "/app/app/assets"
+ASSETS_DIR = "/app/assets"
 OUTPUT_DIR = "/app/output"
 
 # Ensure directories exist
