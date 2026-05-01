@@ -4,7 +4,7 @@ import time
 import os
 import subprocess
 from app import config
-from app.services.tts_engine import init_tts, generate_audio
+from app.services.tts_engine import generate_audio
 from app.services.video_engine import VideoEngine
 
 # Dedicated SadTalker Worker Configuration
