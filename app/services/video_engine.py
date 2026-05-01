@@ -19,12 +19,7 @@ def create_video(sadtalker_video_path, output_path, script_text=""):
         ticker_text = "वार्ता प्रवाह - २४/७ बातम्या"
 
     # FFmpeg Filter Complex for World-Class News Look:
-    # 1. Start with 4K Studio (scaled to 1280x720)
-    # 2. Overlay Anchor on Studio (centered)
-    # 3. Add Channel Logo (Top-Right)
-    # 4. Add LIVE Badge (Top-Left)
-    # 5. Add Pro Ticker (Bottom)
-    
+    # We use escaped double quotes for text to prevent argument splitting
     filters = (
         "[0:v]scale=1280:720[studio];"
         "[1:v]scale=720:-1[anchor];"
@@ -32,7 +27,7 @@ def create_video(sadtalker_video_path, output_path, script_text=""):
         f"[2:v]scale=150:-1[logo];"
         "[v1][logo]overlay=W-w-30:30[v2];"
         "[v2]drawtext=text='● LIVE':fontcolor=white:fontsize=24:x=40:y=40:box=1:boxcolor=red@0.9:boxborderw=10[v3];"
-        f"[v3]drawtext=fontfile='{font_path}':text='{ticker_text}':x=w-mod(t*180,w+tw):y=h-70:fontsize=38:fontcolor=white:box=1:boxcolor=black@0.8:boxborderw=15"
+        f"[v3]drawtext=fontfile='{font_path}':text='{ticker_text}':x=w-mod(t*200,w+tw):y=h-80:fontsize=40:fontcolor=white:box=1:boxcolor=black@0.8:boxborderw=20"
     )
 
     # Pre-Flight Check: Verify Assets
