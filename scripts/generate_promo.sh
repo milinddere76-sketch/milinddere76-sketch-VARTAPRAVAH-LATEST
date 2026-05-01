@@ -3,8 +3,8 @@
 # Varta Pravah Premium Promo Generator
 # Stitches 4K-Style Slides into a cinematic loop
 
-OUTPUT="/app/assets/premium_promo.mp4"
-ASSETS="/app/assets"
+OUTPUT="/app/app/assets/premium_promo.mp4"
+ASSETS="/app/app/assets"
 
 echo "🎬 [PROMO] Generating Premium Cinematic Loop..."
 
