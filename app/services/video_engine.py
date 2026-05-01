@@ -1,5 +1,5 @@
 import os
-import config
+from app import config
 
 def create_video(sadtalker_video_path, output_path, script_text=""):
     """
