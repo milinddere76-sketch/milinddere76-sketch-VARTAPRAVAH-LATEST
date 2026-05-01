@@ -8,9 +8,10 @@ export YOUTUBE_RTMP_URL=${YOUTUBE_RTMP_URL:-rtmp://a.rtmp.youtube.com/live2/qcu7
 mkdir -p /home/ubuntu/queue /home/ubuntu/logs /home/ubuntu/videos/breaking
 chmod -R 777 /app/assets /home/ubuntu/queue /home/ubuntu/logs /home/ubuntu/videos
 
-# 2. Start Nginx (RTMP Server)
+# 2. Configure Nginx (Inject Environment Variables)
+envsubst '$YOUTUBE_RTMP_URL' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 nginx
-echo "✅ [INIT] Nginx RTMP server online."
+echo "✅ [INIT] Nginx RTMP server online with injected configuration."
 
 # 3. Generate Branded Promo (Self-Healing)
 echo "🎬 [INIT] Verifying branding assets..."
