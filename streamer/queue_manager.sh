@@ -28,14 +28,14 @@ while true; do
       
       # Insert promo every 5 videos (approx every 15 min)
       if [ $((counter % 5)) -eq 0 ]; then
-        echo "file '/home/ubuntu/videos/promo.mp4'" >> "$PLAYLIST"
+        echo "file '/app/assets/promo.mp4'" >> "$PLAYLIST"
       fi
     fi
   done
 
   # 4. ZERO-DOWNTIME SECRET: Always add the long loop fallback at the end
   # This ensures FFmpeg always has content to read before the next loop cycle.
-  echo "file '/home/ubuntu/videos/fallback.mp4'" >> "$PLAYLIST"
+  echo "file '/app/assets/fallback.mp4'" >> "$PLAYLIST"
 
   # Wait 10 seconds before the next sync
   sleep 10

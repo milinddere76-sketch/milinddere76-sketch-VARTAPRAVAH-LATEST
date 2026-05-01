@@ -10,8 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     liquidsoap \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Create HLS and PID directories
-RUN mkdir -p /var/www/hls /run && chmod -R 777 /var/www/hls /run
+# Create necessary directories
+RUN mkdir -p /var/www/hls /run /home/ubuntu/queue /home/ubuntu/logs /home/ubuntu/videos/breaking && \
+    chmod -R 777 /var/www/hls /run /home/ubuntu/queue /home/ubuntu/logs /home/ubuntu/videos
 
 WORKDIR /app
 

@@ -8,13 +8,13 @@ LOG_FILE="/home/ubuntu/logs/playout.log"
 
 echo "🚀 [PRO-PLAYOUT] Starting continuous broadcast engine..."
 
+# Wait for the Brain to create the first playlist
+while [ ! -f "$PLAYLIST" ]; do
+  echo "⏳ [WAIT] Waiting for Queue Manager to generate the first playlist..."
+  sleep 2
+done
+
 while true; do
-  # Check if playlist exists, if not, create a placeholder with the promo
-  if [ ! -f "$PLAYLIST" ]; then
-    echo "⚠️ [WARN] Playlist missing. Creating emergency fallback..."
-    echo "ffconcat version 1.0" > "$PLAYLIST"
-    echo "file '/home/ubuntu/videos/promo.mp4'" >> "$PLAYLIST"
-  fi
 
   # Use environment variable if present, otherwise default to the provided key
   TARGET_URL=${YOUTUBE_RTMP_URL:-rtmp://a.rtmp.youtube.com/live2/qcu7-xesd-m4sv-9zvv-e335}
