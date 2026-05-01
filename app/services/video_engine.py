@@ -35,19 +35,31 @@ def create_video(sadtalker_video_path, output_path, script_text=""):
         f"[v3]drawtext=fontfile='{font_path}':text='{ticker_text}':x=w-mod(t*180,w+tw):y=h-70:fontsize=38:fontcolor=white:box=1:boxcolor=black@0.8:boxborderw=15"
     )
 
-    cmd = f"""
-    ffmpeg -y -loop 1 -i {studio_path} -t 30 \
-    -i {sadtalker_video_path} \
-    -i {logo_path} \
-    -filter_complex "{filters}" \
-    -r 25 -shortest \
-    -c:v libx264 -preset veryfast -b:v 2500k -pix_fmt yuv420p \
-    -c:a aac -b:a 128k \
-    {output_path}
-    """
+    # Pre-Flight Check: Verify Assets
+    for asset in [logo_path, studio_path, sadtalker_video_path]:
+        if not os.path.exists(asset):
+            print(f"❌ [VIDEO-ENGINE] Missing Asset: {asset}")
+            return None
+
+    cmd = [
+        "ffmpeg", "-y", "-loop", "1", "-i", studio_path, "-t", "30",
+        "-i", sadtalker_video_path,
+        "-i", logo_path,
+        "-filter_complex", filters,
+        "-r", "25", "-shortest",
+        "-c:v", "libx264", "-preset", "veryfast", "-b:v", "2500k", "-pix_fmt", "yuv420p",
+        "-c:a", "aac", "-b:a", "128k",
+        output_path
+    ]
     
     print(f"🎬 [VIDEO-ENGINE] Branded Composition: {output_path}...")
-    os.system(cmd)
+    import subprocess
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    
+    if result.returncode != 0:
+        print(f"❌ [VIDEO-ENGINE-ERROR] {result.stderr}")
+        return None
+
     return output_path
 
 class VideoEngine:
