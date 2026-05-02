@@ -19,16 +19,19 @@ def create_video(sadtalker_video_path, output_path, script_text=""):
     with open(ticker_file, "w", encoding="utf-8") as f:
         f.write(ticker_text)
 
-    # FFmpeg Filter Complex for World-Class News Look:
-    # We use quoted expressions for x and y to prevent ARM-based parser errors
-    filters = (
-        "[0:v]scale=1280:720[studio];"
+    # FFmpeg Master Filter Complex:
+    # 1. Scale Studio to Full 720p Widescreen (Crop-to-Fill)
+    # 2. Position Anchor, Logo, and Ticker
+    # 3. Mix Speech and Background Music
+    master_filter = (
+        "[0:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720[studio];"
         "[1:v]scale=720:-1[anchor];"
         "[studio][anchor]overlay=(main_w-720)/2:(main_h-720)/2+50[v1];"
-        f"[2:v]scale=150:-1[logo];"
+        f"[2:v]scale=180:-1[logo];"
         "[v1][logo]overlay=W-w-30:30[v2];"
         "[v2]drawtext=text='LIVE':fontcolor=white:fontsize=24:x=40:y=40:box=1:boxcolor=red@0.9:boxborderw=10[v3];"
-        f"[v3]drawtext=fontfile='{font_path}':textfile='{ticker_file}':x='w-mod(t*200,w+tw)':y='h-100':fontsize=45:fontcolor=white:box=1:boxcolor=black@0.8:boxborderw=20"
+        f"[v3]drawtext=fontfile='{font_path}':textfile='{ticker_file}':x='w-mod(t*200,w+tw)':y='h-100':fontsize=45:fontcolor=white:box=1:boxcolor=black@0.8:boxborderw=20[vout];"
+        "[1:a][3:a]amix=inputs=2:duration=first:dropout_transition=2[aout]"
     )
 
     # Pre-Flight Check: Verify Assets
@@ -38,10 +41,13 @@ def create_video(sadtalker_video_path, output_path, script_text=""):
             return None
 
     cmd = [
-        "ffmpeg", "-y", "-loop", "1", "-i", studio_path, "-t", "30",
+        "ffmpeg", "-y", "-loop", "1", "-i", studio_path,
         "-i", sadtalker_video_path,
         "-i", logo_path,
-        "-filter_complex", filters,
+        "-f", "lavfi", "-i", "sine=f=80:d=1,aecho=0.8:0.88:60:0.4", # Input 3: News Bed
+        "-filter_complex", master_filter,
+        "-map", "[vout]", # Final video
+        "-map", "[aout]", # Final mixed audio
         "-r", "25", "-s", "1280x720", "-shortest",
         "-c:v", "libx264", "-preset", "ultrafast", "-b:v", "2500k", "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-b:a", "128k",
