@@ -41,11 +41,12 @@ envsubst '$YOUTUBE_RTMP_URL' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx
 nginx
 echo "✅ [INIT] Nginx RTMP server online with injected configuration."
 
-# 3. Generate Branded Promo (Self-Healing)
+# 3. Generate Branded Promo (Self-Healing Force)
 echo "🎬 [INIT] Verifying branding assets..."
+rm -f /app/assets/promo.mp4 # FORCE CLEAN START
 ls -l /app/assets/
 
-if [ ! -f "/app/assets/premium_promo.mp4" ] && [ ! -f "/app/assets/promo.mp4" ]; then
+if [ ! -f "/app/assets/premium_promo.mp4" ]; then
     echo "🔨 [INIT] Generating promo.mp4 from cinematic slides..."
     
     # Hunt for images in multiple potential locations

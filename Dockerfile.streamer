@@ -23,12 +23,9 @@ COPY streamer/queue_manager.sh /app/queue_manager.sh
 COPY streamer/init_streamer.sh /app/init_streamer.sh
 RUN chmod +x /app/*.sh
 
-# Copy ALL assets explicitly (including slides and logos)
-COPY ./assets/*.png /app/assets/
-COPY ./assets/*.mp4 /app/assets/
-# Create a backup that cannot be overwritten by volumes
-COPY ./assets/*.png /app/backup_assets/
-COPY ./assets/*.mp4 /app/backup_assets/
+# Copy ALL assets explicitly (indestructible backup included)
+COPY assets /app/assets
+COPY assets /app/backup_assets
 RUN chmod -R 777 /app/assets /app/backup_assets
 
 # Start everything via the master init script

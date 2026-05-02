@@ -18,6 +18,9 @@ WORKDIR /app
 # Copy the entire project
 COPY . .
 
+# FORCE BRANDING: Explicitly copy assets to bypass any ignore rules
+COPY assets /app/assets
+
 # Install dependencies (Lean Mode)
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
